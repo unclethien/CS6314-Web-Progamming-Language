@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Silly Game</title>
+    <style>
+      table {
+        border-collapse: collapse;
+      }
+      td {
+        border: 2px solid black;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Silly Game</h1>
+    <div>
+      <label for="rows">Enter #rows:</label>
+      <input type="text" name="rows" id="rows" />
+      <br />
+      <label for="cols">Enter #cols:</label>
+      <input type="text" name="cols" id="cols" />
+      <br />
+      <button>Start a new game</button>
+    </div>
+
+    <script>
+      document.querySelector("button").addEventListener("click", function () {
+        const rows = document.getElementById("rows").value;
+        const cols = document.getElementById("cols").value;
+        createTable(rows, cols);
+        this.style.display = "none";
+      });
+
+      function createTable(rows, cols) {
+        const table = document.createElement("table");
+        let cellNumber = 1;
+
+        for (let i = 0; i < rows; i++) {
+          const row = document.createElement("tr");
+          for (let j = 0; j < cols; j++) {
+            const cell = document.createElement("td");
+            cell.innerHTML = cellNumber++;
+            cell.addEventListener("click", function () {
+              if (!this.classList.contains("clicked")) {
+                this.style.backgroundColor = "orange";
+                this.classList.add("clicked");
+                checkEndGame(rows, cols);
+              }
+            });
+            row.appendChild(cell);
+          }
+          table.appendChild(row);
+        }
+
+        const existingTable = document.querySelector("table");
+        if (existingTable) {
+          existingTable.remove();
+        }
+        document.body.appendChild(table);
+      }
+
+      function checkEndGame(rows, cols) {
+        const clickedCells = document.querySelectorAll("td.clicked").length;
+        const totalCells = rows * cols;
+
+        if (clickedCells === totalCells) {
+          document.querySelectorAll("td").forEach((cell) => {
+            cell.style.backgroundColor = "red";
+          });
+          document.querySelector("button").style.display = "block";
+        }
+      }
+    </script>
+  </body>
+</html>

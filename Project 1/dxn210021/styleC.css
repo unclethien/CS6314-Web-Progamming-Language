@@ -1,0 +1,40 @@
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  font-family: "Roboto", sans-serif; /* Example of using a web font */
+}
+
+.box {
+  width: 100px;
+  height: 100px;
+  font-family: Tahoma, sans-serif;
+  font-size: 40px;
+  text-align: center;
+  line-height: 100px; /* Vertically centers the text */
+  background: linear-gradient(
+    135deg,
+    #dfe1e7,
+    #687291
+  ); /* Gradient background */
+  border: 1px solid #687291;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transition on transform and shadow */
+}
+
+.box:hover {
+  transform: scale(1.1); /* Slightly enlarge the box on hover */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add a shadow effect */
+}
+
+.box:last-child {
+  background: linear-gradient(
+    135deg,
+    #687291,
+    #000000
+  ); /* Darker gradient for the last box */
+  border: 4px solid black;
+  color: white; /* Make the text visible against the dark background */
+}

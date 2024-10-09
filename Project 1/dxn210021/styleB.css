@@ -1,0 +1,31 @@
+body {
+  display: flex;
+  flex-wrap: nowrap;
+  margin: 0;
+  height: 100vh;
+  position: relative; /* Positioning context for absolutely positioned children */
+}
+
+.box {
+  width: 100px;
+  height: 150px;
+  font-family: Tahoma, sans-serif;
+  font-size: 40px;
+  background-color: #eeeff2;
+  border-left: 10px dotted #d0d0ff; /* Dotted left border */
+  margin-right: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.box:last-child {
+  position: absolute; /* Position the last box absolutely */
+  bottom: 10px; /* 10px from the bottom */
+  right: 10px; /* 10px from the right */
+  margin-right: 0; /* Remove the margin for the last item */
+}
+
+.box:hover {
+  background-color: yellow; /* Change background on hover */
+  color: goldenrod; /* Change text color on hover */
+}
