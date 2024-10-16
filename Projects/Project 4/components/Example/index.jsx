@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { modelData } from "Projects/Project 4/modelData/example.js";
+import Prism from "prismjs";
+
 import "./styles.css";
 
 /**
  * Since this component shows code we include the https://prismjs.com/
  * formatter. We invoke it by labelling code blocks with class="language-jsx"
  */
-import Prism from "prismjs";
+
 import "prismjs/components/prism-jsx.js";
 import "../../node_modules/prismjs/themes/prism.css";
 
@@ -15,13 +16,13 @@ import "../../node_modules/prismjs/themes/prism.css";
 /* eslint no-plusplus: ["error", { "allowForLoopAfterthoughts": true }] */
 
 // React Components are now written as functional components with hooks
-const Example = () => {
+function Example() {
   const [name, setName] = useState(window.models.exampleModel().name);
   const [counter, setCounter] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [buttonWasClicked, setButtonWasClicked] = useState("");
   const model = window.models.exampleModel();
-  const [motto, setMotto] = useState(modelData.motto);
+  const [motto, setMotto] = useState(model.motto);
 
   const handleMottoChange = (e) => {
     setMotto(e.target.value);
