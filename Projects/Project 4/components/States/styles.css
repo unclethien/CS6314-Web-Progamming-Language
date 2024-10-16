@@ -4,3 +4,41 @@
  * Since CSS uses a global name space for classes we should use names starting
  * with "states" here.
  */
+
+.states-view {
+  text-align: center;
+  margin: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.states-input {
+  padding: 10px;
+  font-size: 1em;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  width: 80%;
+  max-width: 400px;
+}
+
+.states-substring p {
+  font-size: 1.2em;
+  color: #333;
+  margin: 15px 0;
+}
+
+.states-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.states-list li {
+  font-size: 1.5em;
+  padding: 5px;
+  color: #444;
+}
+
+.states-no-match {
+  font-size: 1.5em;
+  color: red;
+}
