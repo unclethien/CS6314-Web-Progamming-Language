@@ -349,6 +349,6 @@ function Example() {
       </div>
     </div>
   );
-};
+}
 
 export default Example;
