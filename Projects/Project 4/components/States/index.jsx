@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./styles.css";
 
 /**
@@ -8,7 +8,7 @@ import "./styles.css";
  */
 function States() {
   // Load the state names from the model data.
-  const allStates = window.models.states(); // Assuming this returns an array of state names.
+  const allStates = window.models.states; // Assuming this returns an array of state names.
 
   // State for the filter substring and filtered list of states.
   const [substring, setSubstring] = useState("");
