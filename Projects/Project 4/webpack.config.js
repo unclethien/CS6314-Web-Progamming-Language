@@ -5,6 +5,7 @@ module.exports = {
     gettingStarted: "./gettingStarted.jsx",
     problem2: "./problem2.jsx",
     problem4: "./problem4.jsx",
+    problem5: "./problem5.jsx",
   },
   module: {
     rules: [

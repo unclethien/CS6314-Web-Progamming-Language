@@ -17,7 +17,7 @@ import "../../node_modules/prismjs/themes/prism.css";
 
 // React Components are now written as functional components with hooks
 function Example() {
-  const [name, setName] = useState(window.models.exampleModel().name);
+  const [name] = useState(window.models.exampleModel().name);
   const [counter, setCounter] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [buttonWasClicked, setButtonWasClicked] = useState("");
@@ -51,7 +51,7 @@ function Example() {
   };
 
   // Method called when the button is pushed
-  const handleButtonClick = (buttonName, event) => {
+  const handleButtonClick = (buttonName) => {
     setButtonWasClicked(buttonName);
   };
 

@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { createRoot } from "react-dom";
 import Example from "./components/Example";
 import States from "./components/States";
+import Header from "./components/Header";
 
-const App = () => {
+function App() {
   const [showExample, setShowExample] = useState(true);
 
   return (
@@ -14,12 +15,13 @@ const App = () => {
       {showExample ? <Example /> : <States />}
     </div>
   );
-};
+}
 
 const root = createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
+    <Header />
     <App />
   </React.StrictMode>
 );

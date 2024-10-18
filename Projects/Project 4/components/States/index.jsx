@@ -6,7 +6,7 @@ import "./styles.css";
  * data for this view (the state names) is available at
  * window.models.statesModel().
  */
-const States = () => {
+function States() {
   const [substring, setSubstring] = useState("");
   const [filteredStates, setFilteredStates] = useState([]);
 
@@ -19,6 +19,7 @@ const States = () => {
     } else {
       const filtered = states
         .filter((state) =>
+          // eslint-disable-next-line implicit-arrow-linebreak
           state.toLowerCase().includes(substring.toLowerCase())
         )
         .sort((a, b) => a.localeCompare(b));
@@ -54,6 +55,6 @@ const States = () => {
       )}
     </div>
   );
-};
+}
 
 export default States;
