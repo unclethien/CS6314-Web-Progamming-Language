@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./styles.css";
 
 /**
@@ -6,43 +6,52 @@ import "./styles.css";
  * data for this view (the state names) is available at
  * window.models.statesModel().
  */
-function States() {
-  console.log("window.models.states()", window.models.statesModel());
-
+const States = () => {
   const [substring, setSubstring] = useState("");
+  const [filteredStates, setFilteredStates] = useState([]);
 
-  // Filter the states based on the substring entered by the user
-  const filteredStates = window.models.states
-    .filter((state) =>
-      state.name.toLowerCase().includes(substring.toLowerCase())
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  useEffect(() => {
+    console.log("window.models.statesModel()", window.models.statesModel());
+
+    const states = window.models.states;
+    if (substring === "") {
+      setFilteredStates(states);
+    } else {
+      const filtered = states
+        .filter((state) =>
+          state.name.toLowerCase().includes(substring.toLowerCase())
+        )
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setFilteredStates(filtered);
+    }
+  }, [substring]);
+
+  const handleInputChange = (event) => {
+    setSubstring(event.target.value);
+  };
 
   return (
     <div className="states-container">
+      <h1>States Filter</h1>
       <input
         type="text"
         value={substring}
-        onChange={(e) => setSubstring(e.target.value)}
-        placeholder="Enter substring..."
-        className="states-input"
+        onChange={handleInputChange}
+        placeholder="Enter substring"
+        className="substring-input"
       />
-      <div className="states-substring-display">
-        Filtering by: {substring ? substring : "All states"}
-      </div>
-      <ul className="states-list">
-        {filteredStates.length > 0 ? (
-          filteredStates.map((state) => (
-            <li key={state.name} className="states-list-item">
-              {state.name}
-            </li>
-          ))
-        ) : (
-          <li className="states-no-match">No matching states found.</li>
-        )}
-      </ul>
+      <p className="substring-display">Substring used: {substring}</p>
+      {filteredStates.length > 0 ? (
+        <ul className="states-list">
+          {filteredStates.map((state, index) => (
+            <li key={index}>{state.name}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="no-match-message">No matching states found.</p>
+      )}
     </div>
   );
-}
+};
 
 export default States;

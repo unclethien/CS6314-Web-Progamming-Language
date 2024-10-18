@@ -1,50 +1,42 @@
-/**
- * CSS for the Project 4, Problem 2 States component.
- * 
- * Since CSS uses a global name space for classes we should use names starting
- * with "states" here.
- */
-/* styles.css */
-
-/* Container for the whole states component */
+/* components/States/styles.css */
 .states-container {
-  width: 300px;
-  margin: 0 auto;
+  margin: 20px;
   padding: 20px;
-  font-family: Arial, sans-serif;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
 }
 
-/* Input field for filtering states */
-.states-input {
+.states-container h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.substring-input {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 15px;
+  padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-/* Display the current substring used for filtering */
-.states-substring-display {
+  border-radius: 5px;
   margin-bottom: 10px;
-  font-style: italic;
-  color: #555;
 }
 
-/* Styling for the states list */
+.substring-display {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
 .states-list {
   list-style-type: none;
   padding: 0;
 }
 
-/* Styling for each state item */
-.states-list-item {
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
+.states-list li {
+  font-size: 16px;
+  margin-bottom: 5px;
 }
 
-/* Message when no states match */
-.states-no-match {
-  color: red;
-  font-weight: bold;
+.no-match-message {
+  font-size: 18px;
+  color: #888;
 }
