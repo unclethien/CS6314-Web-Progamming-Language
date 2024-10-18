@@ -1,3 +1,5 @@
+const path = require("path");
+
 module.exports = {
   entry: {
     gettingStarted: "./gettingStarted.jsx",
@@ -9,7 +11,12 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: ["babel-loader"],
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env", "@babel/preset-react"],
+          },
+        },
       },
       {
         test: /\.css$/,
@@ -32,7 +39,7 @@ module.exports = {
     extensions: ["*", ".js", ".jsx"],
   },
   output: {
-    path: `${__dirname}/compiled`,
+    path: path.resolve(__dirname, "compiled"),
     publicPath: "/",
     filename: "[name].bundle.js",
   },
