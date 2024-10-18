@@ -4,3 +4,47 @@
  * Since CSS uses a global name space for classes we should use names starting
  * with "states" here.
  */
+/* styles.css */
+
+/* Container for the whole states component */
+.states-container {
+  width: 300px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+/* Input field for filtering states */
+.states-input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Display the current substring used for filtering */
+.states-substring-display {
+  margin-bottom: 10px;
+  font-style: italic;
+  color: #555;
+}
+
+/* Styling for the states list */
+.states-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+/* Styling for each state item */
+.states-list-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* Message when no states match */
+.states-no-match {
+  color: red;
+  font-weight: bold;
+}
