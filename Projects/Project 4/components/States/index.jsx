@@ -13,15 +13,15 @@ const States = () => {
   useEffect(() => {
     console.log("window.models.statesModel()", window.models.statesModel());
 
-    const states = window.models.states;
-    if (substring === "") {
+    const states = window.models.statesModel();
+    if (substring.length === 0) {
       setFilteredStates(states);
     } else {
       const filtered = states
         .filter((state) =>
-          state.name.toLowerCase().includes(substring.toLowerCase())
+          state.toLowerCase().includes(substring.toLowerCase())
         )
-        .sort((a, b) => a.name.localeCompare(b.name));
+        .sort((a, b) => a.localeCompare(b));
       setFilteredStates(filtered);
     }
   }, [substring]);
@@ -42,11 +42,13 @@ const States = () => {
       />
       <p className="substring-display">Substring used: {substring}</p>
       {filteredStates.length > 0 ? (
-        <ul className="states-list">
-          {filteredStates.map((state, index) => (
-            <li key={index}>{state.name}</li>
-          ))}
-        </ul>
+        <table>
+          <ul className="states-list">
+            {filteredStates.map((state, index) => (
+              <li key={index}>{state}</li>
+            ))}
+          </ul>
+        </table>
       ) : (
         <p className="no-match-message">No matching states found.</p>
       )}
