@@ -48,7 +48,6 @@ function PhotoShare() {
             </Paper>
           </Grid>
           <Grid item sm={9}>
-            <Paper className="main-grid-item">
               <Routes>
                 <Route
                   path="/"
@@ -81,7 +80,6 @@ function PhotoShare() {
                 />
                 <Route path="/users" element={<UserList />} />
               </Routes>
-            </Paper>
           </Grid>
         </Grid>
       </div>

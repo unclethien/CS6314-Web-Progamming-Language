@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Button } from "@mui/material";
+import { Typography, Button, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
 
@@ -24,7 +24,7 @@ function UserDetail({ userId }) {
   }
 
   return (
-    <div>
+    <Paper className="main-grid-item">
       <Typography variant="h5">{`${user.first_name} ${user.last_name}`}</Typography>
       <Typography variant="body1">{`Location: ${user.location}`}</Typography>
       <Typography variant="body1">{`Description: ${user.description}`}</Typography>
@@ -32,7 +32,8 @@ function UserDetail({ userId }) {
       <Button variant="contained" onClick={() => navigate(`/photos/${userId}`)}>
         View Photos
       </Button>
-    </div>
+    </Paper>
+    
   );
 }
 
