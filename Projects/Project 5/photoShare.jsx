@@ -1,4 +1,5 @@
-import React from "react";
+/* eslint-disable react/jsx-wrap-multilines */
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { Grid, Typography, Paper } from "@mui/material";
 import { HashRouter, Route, Routes, useParams } from "react-router-dom";
@@ -10,24 +11,35 @@ import UserList from "./components/UserList";
 import UserPhotos from "./components/UserPhotos";
 
 function UserDetailRoute() {
-  const {userId} = useParams();
+  const { userId } = useParams();
   console.log("UserDetailRoute: userId is:", userId);
   return <UserDetail userId={userId} />;
 }
 
-
-function UserPhotosRoute() {
-  const {userId} = useParams();
-  return <UserPhotos userId={userId} />;
+function UserPhotosRoute({ advancedFeatures, setAdvancedFeatures }) {
+  const { userId, photoId } = useParams();
+  return (
+    <UserPhotos
+      userId={userId}
+      photoId={photoId}
+      advancedFeatures={advancedFeatures}
+      setAdvancedFeatures={setAdvancedFeatures}
+    />
+  );
 }
 
 function PhotoShare() {
+  const [advancedFeatures, setAdvancedFeatures] = useState(false);
+
   return (
     <HashRouter>
       <div>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <TopBar />
+            <TopBar
+              advancedFeatures={advancedFeatures}
+              setAdvancedFeatures={setAdvancedFeatures}
+            />
           </Grid>
           <div className="main-topbar-buffer" />
           <Grid item sm={3}>
@@ -40,11 +52,12 @@ function PhotoShare() {
               <Routes>
                 <Route
                   path="/"
-                  element={(
+                  element={
                     <Typography variant="body1">
                       Welcome to your photosharing app! This{" "}
                       <a href="https://mui.com/components/paper/">Paper</a>{" "}
-                      component displays the main content of the application. The
+                      component displays the main content of the application.
+                      The
                       {"sm={9}"} prop in the{" "}
                       <a href="https://mui.com/components/grid/">Grid</a> item
                       component makes it responsively display 9/12 of the
@@ -54,10 +67,18 @@ function PhotoShare() {
                       homepage, so you should delete this Route component once
                       you get started.
                     </Typography>
-                  )}
+                  }
                 />
                 <Route path="/users/:userId" element={<UserDetailRoute />} />
-                <Route path="/photos/:userId" element={<UserPhotosRoute />} />
+                <Route
+                  path="/photos/:userId/:photoId?"
+                  element={
+                    <UserPhotosRoute
+                      advancedFeatures={advancedFeatures}
+                      setAdvancedFeatures={setAdvancedFeatures}
+                    />
+                  }
+                />
                 <Route path="/users" element={<UserList />} />
               </Routes>
             </Paper>
@@ -67,7 +88,6 @@ function PhotoShare() {
     </HashRouter>
   );
 }
-
 
 const root = ReactDOM.createRoot(document.getElementById("photoshareapp"));
 root.render(<PhotoShare />);
