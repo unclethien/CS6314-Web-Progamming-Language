@@ -52,7 +52,7 @@ function TopBar({ advancedFeatures, setAdvancedFeatures }) {
         <Typography variant="h5" color="inherit" style={{ flexGrow: 1 }}>
           Thien Nguyen
         </Typography>
-        <Typography variant="h5" color="inherit">
+        <Typography variant="h5" color="inherit" paddingRight="10px">
           {topBarText} - Version: {version}
         </Typography>
         <FormControlLabel
