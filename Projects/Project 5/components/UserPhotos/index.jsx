@@ -16,7 +16,7 @@ import "./styles.css";
 function UserPhotos({ userId }) {
   const navigate = useNavigate();
   const photos = window.models.photoOfUserModel(userId);
-
+  
   return (
     // <Typography variant="body1">
     //   This should be the UserPhotos view of the PhotoShare app. Since it is
@@ -27,13 +27,14 @@ function UserPhotos({ userId }) {
     //     {JSON.stringify(window.models.photoOfUserModel(userId))}
     //   </Typography>
     // </Typography>
+    
     <div>
       {photos.map((photo) => (
         <Card key={photo._id} style={{ margin: "10px" }}>
           <CardMedia
             component="img"
             height="140"
-            image={`/photos/${photo.file_name}`}
+            image={`/images/${photo.file_name}`}
             alt={photo.title}
           />
           <CardContent>
@@ -41,7 +42,7 @@ function UserPhotos({ userId }) {
               {new Date(photo.date_time).toLocaleString()}
             </Typography>
             <List>
-              {photo.comments.map((comment) => (
+              {photo.comments && photo.comments.map((comment) => (
                 <ListItem key={comment._id}>
                   <ListItemText
                     primary={comment.comment}

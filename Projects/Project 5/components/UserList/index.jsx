@@ -35,11 +35,11 @@ function UserList() {
         </ListItem>
         <Divider /> */}
         {users.map((user) => (
-          <div key={user.id}>
+          <div key={user._id}>
             <ListItem
               button
               onClick={() => {
-                navigate(`/user/${user.id}`);
+                navigate(`/users/${user._id}`);
               }}
             >
               <ListItemText primary={`${user.first_name} ${user.last_name}`} />

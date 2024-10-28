@@ -6,7 +6,7 @@ import "./styles.css";
 
 function UserDetail({ userId }) {
   const navigate = useNavigate();
-  const user = window.models.UserDetailModel(userId);
+  const user = window.models.userModel(userId);  
   return (
     // <Typography variant="body1">
     //   This should be the UserDetail view of the PhotoShare app. Since it is
