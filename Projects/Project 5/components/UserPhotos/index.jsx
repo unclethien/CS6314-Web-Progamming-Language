@@ -59,7 +59,9 @@ function UserPhotos({ userId }) {
                               padding: 0,
                               font: "inherit",
                             }}
-                            onClick={() => navigate(`/photos/${comment.user._id}`)}
+                            onClick={() =>
+                              navigate(`/photos/${comment.user._id}`)
+                            }
                           >
                             {comment.user.first_name} {comment.user.last_name}
                           </button>
