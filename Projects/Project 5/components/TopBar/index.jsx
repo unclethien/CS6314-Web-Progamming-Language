@@ -61,7 +61,7 @@ function TopBar({ advancedFeatures, setAdvancedFeatures }) {
               checked={advancedFeatures}
               onChange={() => setAdvancedFeatures(!advancedFeatures)}
               inputProps={{ "aria-label": "Enable Advanced Features" }}
-              color="secondary"
+              color="success"
             />
           }
           label="Enable Advanced Features"

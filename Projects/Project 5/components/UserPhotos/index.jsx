@@ -61,10 +61,10 @@ function UserPhotos({ userId, advancedFeatures }) {
   if (advancedFeatures) {
     return (
       <div>
-        <Card key={currentPhoto._id} style={{ margin: "10px" }}>
+        <Card key={currentPhoto._id}>
           <CardMedia
             component="img"
-            height="500"
+            height="450"
             image={`/images/${currentPhoto.file_name}`}
             alt={currentPhoto.title}
             style={{ objectFit: "contain" }}
@@ -79,7 +79,7 @@ function UserPhotos({ userId, advancedFeatures }) {
                   <ListItem key={comment._id}>
                     <ListItemText
                       primary={comment.comment}
-                      secondary={
+                      secondary={(
                         <>
                           {new Date(comment.date_time).toLocaleString()} by{" "}
                           <button
@@ -92,14 +92,12 @@ function UserPhotos({ userId, advancedFeatures }) {
                               padding: 0,
                               font: "inherit",
                             }}
-                            onClick={() =>
-                              navigate(`/photos/${comment.user._id}`)
-                            }
+                            onClick={() => navigate(`/photos/${comment.user._id}`)}
                           >
                             {comment.user.first_name} {comment.user.last_name}
                           </button>
                         </>
-                      }
+                      )}
                     />
                   </ListItem>
                 ))}
@@ -145,7 +143,7 @@ function UserPhotos({ userId, advancedFeatures }) {
                   <ListItem key={comment._id}>
                     <ListItemText
                       primary={comment.comment}
-                      secondary={
+                      secondary={(
                         <>
                           {new Date(comment.date_time).toLocaleString()} by{" "}
                           <button
@@ -158,14 +156,12 @@ function UserPhotos({ userId, advancedFeatures }) {
                               padding: 0,
                               font: "inherit",
                             }}
-                            onClick={() =>
-                              navigate(`/photos/${comment.user._id}`)
-                            }
+                            onClick={() => navigate(`/photos/${comment.user._id}`)}
                           >
                             {comment.user.first_name} {comment.user.last_name}
                           </button>
                         </>
-                      }
+                      )}
                     />
                   </ListItem>
                 ))}
