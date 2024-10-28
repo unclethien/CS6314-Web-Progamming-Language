@@ -6,10 +6,11 @@ import "./styles.css";
 
 function TopBar() {
   const location = useLocation();
-  const userId = location.pathname.split('/')[2];
+  const userId = location.pathname.split("/")[2];
 
   const user = userId ? window.models.userModel(userId) : null;
-  let topBarText = `Photos of ${user.first_name} ${user.last_name}`;
+  let topBarText = "Thien Nguyen";
+  // let topBarText = `Photos of ${user.first_name} ${user.last_name}`;
 
   if (location.pathname.startsWith("/users/") && user) {
     topBarText = `${user.first_name} ${user.last_name}`;
