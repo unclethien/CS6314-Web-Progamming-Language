@@ -131,11 +131,14 @@ app.get("/test/:p1", async function (request, response) {
 });
 
 /**
- * URL /user/list - Returns all the User objects.
+ * URL /user/list - Returns all the User objects with their photo and comment counts.
  */
 app.get("/user/list", async function (request, response) {
   try {
-    const users = await User.find({}, { _id: 1, first_name: 1, last_name: 1 });
+    const users = await User.find(
+      {},
+      { _id: 1, first_name: 1, last_name: 1 }
+    ).lean();
     response.status(200).json(users);
   } catch (err) {
     console.error("Error in /user/list:", err);
@@ -244,20 +247,6 @@ app.get("/user/:id/photoCount", async function (request, response) {
   const userId = request.params.id;
   try {
     const photoCount = await Photo.countDocuments({ user_id: userId });
-    response.status(200).json(photoCount);
-  } catch (err) {
-    console.error("Error fetching photo count for user:", err);
-    response.status(400).json(err);
-  }
-});
-
-/**
- * URL /user/:id/photoCount - Returns the number of photos for User (id).
- */
-app.get("/user/:id/photoCount", async function (request, response) {
-  const userId = request.params.id;
-  try {
-    const photoCount = await Photo.countDocuments({ user_id: userId });
     response.status(200).json({ count: photoCount });
   } catch (err) {
     console.error("Error fetching photo count for user:", err);
@@ -313,7 +302,7 @@ app.get("/user/:id/comments", async function (request, response) {
 
     if (userComments.length === 0) {
       console.log("Comments for user with _id:" + userId + " not found.");
-      return response.status(404).send("Not found");
+      return response.status(400).send("Not found");
     }
 
     return response.status(200).json(userComments);
