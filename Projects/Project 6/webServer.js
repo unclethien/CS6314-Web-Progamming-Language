@@ -252,20 +252,16 @@ app.get("/user/:id/photoCount", async function (request, response) {
 });
 
 /**
- * URL /photos/:id/commentCount - Returns the number of comments for Photo (id).
+ * URL /user/:id/photoCount - Returns the number of photos for User (id).
  */
-app.get("/photos/:id/commentCount", async function (request, response) {
-  const photoId = request.params.id;
+app.get("/user/:id/photoCount", async function (request, response) {
+  const userId = request.params.id;
   try {
-    const photo = await Photo.findById(photoId);
-    if (!photo) {
-      console.log("Photo with _id:" + photoId + " not found.");
-      return response.status(400).send("Not found");
-    }
-    return response.status(200).json(photo.comments.length);
+    const photoCount = await Photo.countDocuments({ user_id: userId });
+    response.status(200).json({ count: photoCount });
   } catch (err) {
-    console.error("Error fetching comment count for photo:", err);
-    return response.status(400).json(err);
+    console.error("Error fetching photo count for user:", err);
+    response.status(400).json(err);
   }
 });
 
@@ -284,24 +280,26 @@ app.get("/user/:id/commentCount", async function (request, response) {
 });
 
 /**
-* URL /user/:id/comments - Returns all comments authored by the user with _id of id.
-*/
+ * URL /user/:id/comments - Returns all comments authored by the user with _id of id.
+ */
 app.get("/user/:id/comments", async function (request, response) {
- const userId = request.params.id;
- try {
-   const comments = await Comment.find({ user_id: userId }).populate({
-     path: "photo",
-     select: { _id: 1, file_name: 1 },
-   }).lean();
+  const userId = request.params.id;
+  try {
+    const comments = await Comment.find({ user_id: userId })
+      .populate({
+        path: "photo",
+        select: { _id: 1, file_name: 1 },
+      })
+      .lean();
 
-   if (comments.length === 0) {
-     console.log("Comments for user with _id:" + userId + " not found.");
-     return response.status(404).send("Not found");
-   }
+    if (comments.length === 0) {
+      console.log("Comments for user with _id:" + userId + " not found.");
+      return response.status(404).send("Not found");
+    }
 
-   return response.status(200).json(comments);
- } catch (err) {
-   console.error("Error fetching comments for user:", err);
-   return response.status(400).json(err);
- }
+    return response.status(200).json(comments);
+  } catch (err) {
+    console.error("Error fetching comments for user:", err);
+    return response.status(400).json(err);
+  }
 });
