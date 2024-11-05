@@ -271,7 +271,14 @@ app.get("/user/:id/photoCount", async function (request, response) {
 app.get("/user/:id/commentCount", async function (request, response) {
   const userId = request.params.id;
   try {
-    const commentCount = await Comment.countDocuments({ user_id: userId });
+    const photos = await Photo.find({ "comments.user_id": userId });
+    const commentCount = photos.reduce((count, photo) => {
+      const userComments = photo.comments.filter(
+        (comment) => comment.user_id.toString() === userId
+      );
+      return count + userComments.length;
+    }, 0);
+
     return response.status(200).json({ count: commentCount });
   } catch (err) {
     console.error("Error fetching comment count for user:", err);
@@ -285,19 +292,31 @@ app.get("/user/:id/commentCount", async function (request, response) {
 app.get("/user/:id/comments", async function (request, response) {
   const userId = request.params.id;
   try {
-    const comments = await Comment.find({ user_id: userId })
-      .populate({
-        path: "photo",
-        select: { _id: 1, file_name: 1 },
-      })
-      .lean();
+    const photos = await Photo.find({ "comments.user_id": userId }).lean();
+    const userComments = [];
 
-    if (comments.length === 0) {
+    photos.forEach((photo) => {
+      photo.comments.forEach((comment) => {
+        if (comment.user_id.toString() === userId) {
+          userComments.push({
+            _id: comment._id,
+            comment: comment.comment,
+            photo: {
+              _id: photo._id,
+              file_name: photo.file_name,
+            },
+            date_time: comment.date_time,
+          });
+        }
+      });
+    });
+
+    if (userComments.length === 0) {
       console.log("Comments for user with _id:" + userId + " not found.");
       return response.status(404).send("Not found");
     }
 
-    return response.status(200).json(comments);
+    return response.status(200).json(userComments);
   } catch (err) {
     console.error("Error fetching comments for user:", err);
     return response.status(400).json(err);
