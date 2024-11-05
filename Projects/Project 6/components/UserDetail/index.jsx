@@ -2,12 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Typography, Button, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
+import { useLocation } from 'react-router-dom';
 
 import "./styles.css";
 
-function UserDetail({ userId }) {
+function UserDetail() {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [user, setUser] = useState(null);
+
+  const userId = state.userId;
 
   useEffect(() => {
     fetchModel(`http://localhost:3000/user/${userId}`)
