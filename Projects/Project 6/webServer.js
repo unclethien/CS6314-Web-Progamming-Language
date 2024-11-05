@@ -165,7 +165,7 @@ app.get("/user/:id", async function (request, response) {
     response.status(200).send(users);
   } catch (err) {
     console.error("Error in /user/list:", err);
-    response.status(500).json(err);
+    response.status(400).send("Invalid user id");
   }
 });
 
@@ -173,28 +173,57 @@ app.get("/user/:id", async function (request, response) {
  * URL /photosOfUser/:id - Returns the Photos for User (id).
  */
 app.get("/photosOfUser/:id", async function (request, response) {
-  const id = request.params.id;
+  const userId = request.params.id;
   try {
     const photos = await Photo.find(
-      { user_id: id },
-      { _id: 1, user_id: 1, file_name: 1, date_time: 1 }
-    ).populate({
-      path: "comments",
-      select: { _id: 1, comment: 1, date_time: 1, user: 1 },
-      populate: {
-        path: "user",
-        select: { _id: 1, first_name: 1, last_name: 1 },
-      },
-    });
+      { user_id: userId },
+      {
+        _id: 1,
+        user_id: 1,
+        file_name: 1,
+        date_time: 1,
+        comments: 1,
+      }
+    ).lean(); // Use lean() for plain JS objects
+
     if (photos.length === 0) {
-      console.log("Photos for user with _id:" + id + " not found.");
-      response.status(400).send("Not found");
-      return;
+      console.log("Photos for user with _id:" + userId + " not found.");
+      return response.status(404).send("Not found");
     }
-    response.status(200).json(photos);
+
+    // Fetch user details for each comment
+    const commentUserIds = new Set();
+    photos.forEach((photo) => {
+      photo.comments.forEach((comment) => {
+        commentUserIds.add(comment.user_id);
+      });
+    });
+
+    const users = await User.find(
+      { _id: { $in: Array.from(commentUserIds) } },
+      { _id: 1, first_name: 1, last_name: 1 }
+    ).lean();
+
+    const userMap = new Map();
+    users.forEach((user) => {
+      userMap.set(user._id.toString(), user);
+    });
+
+    // Ensure that each comment has a user object, even if it's empty
+    const transformedPhotos = photos.map((photo) => ({
+      ...photo,
+      comments: photo.comments.map((comment) => ({
+        _id: comment._id,
+        comment: comment.comment,
+        date_time: comment.date_time,
+        user: userMap.get(comment.user_id.toString()) || {},
+      })),
+    }));
+
+    return response.status(200).json(transformedPhotos);
   } catch (err) {
-    console.error("Error in /photosOfUser/:id:", err);
-    response.status(500).json(err);
+    console.error("Error fetching photos for user:", err);
+    return response.status(400).json(err);
   }
 });
 
@@ -206,4 +235,73 @@ const server = app.listen(3000, function () {
       " exporting the directory " +
       __dirname
   );
+});
+
+/**
+ * URL /user/:id/photoCount - Returns the number of photos for User (id).
+ */
+app.get("/user/:id/photoCount", async function (request, response) {
+  const userId = request.params.id;
+  try {
+    const photoCount = await Photo.countDocuments({ user_id: userId });
+    response.status(200).json(photoCount);
+  } catch (err) {
+    console.error("Error fetching photo count for user:", err);
+    response.status(400).json(err);
+  }
+});
+
+/**
+ * URL /photos/:id/commentCount - Returns the number of comments for Photo (id).
+ */
+app.get("/photos/:id/commentCount", async function (request, response) {
+  const photoId = request.params.id;
+  try {
+    const photo = await Photo.findById(photoId);
+    if (!photo) {
+      console.log("Photo with _id:" + photoId + " not found.");
+      return response.status(400).send("Not found");
+    }
+    return response.status(200).json(photo.comments.length);
+  } catch (err) {
+    console.error("Error fetching comment count for photo:", err);
+    return response.status(400).json(err);
+  }
+});
+
+/**
+ * URL /user/:id/commentCount - Returns the count of comments authored by the user with _id of id.
+ */
+app.get("/user/:id/commentCount", async function (request, response) {
+  const userId = request.params.id;
+  try {
+    const commentCount = await Comment.countDocuments({ user_id: userId });
+    return response.status(200).json({ count: commentCount });
+  } catch (err) {
+    console.error("Error fetching comment count for user:", err);
+    return response.status(400).json(err);
+  }
+});
+
+/**
+* URL /user/:id/comments - Returns all comments authored by the user with _id of id.
+*/
+app.get("/user/:id/comments", async function (request, response) {
+ const userId = request.params.id;
+ try {
+   const comments = await Comment.find({ user_id: userId }).populate({
+     path: "photo",
+     select: { _id: 1, file_name: 1 },
+   }).lean();
+
+   if (comments.length === 0) {
+     console.log("Comments for user with _id:" + userId + " not found.");
+     return response.status(404).send("Not found");
+   }
+
+   return response.status(200).json(comments);
+ } catch (err) {
+   console.error("Error fetching comments for user:", err);
+   return response.status(400).json(err);
+ }
 });
