@@ -44,6 +44,10 @@ const User = require("./schema/user.js");
 const Photo = require("./schema/photo.js");
 const SchemaInfo = require("./schema/schemaInfo.js");
 
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const multer = require("multer");
+
 // XXX - Your submission should work without this line. Comment out or delete
 // this line for tests and before submission!
 // const models = require("./modelData/photoApp.js").models;
@@ -60,6 +64,9 @@ app.use(express.static(__dirname));
 app.get("/", function (request, response) {
   response.send("Simple web server of files from " + __dirname);
 });
+
+app.use(session({secret: "secretKey", resave: false, saveUninitialized: false}));
+app.use(bodyParser.json());
 
 /**
  * Use express to handle argument passing in the URL. This .get will cause
