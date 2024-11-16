@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Typography, Button, Paper } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
-import { useLocation } from 'react-router-dom';
 
 import "./styles.css";
 
@@ -37,7 +36,6 @@ function UserDetail() {
         View Photos
       </Button>
     </Paper>
-    
   );
 }
 
