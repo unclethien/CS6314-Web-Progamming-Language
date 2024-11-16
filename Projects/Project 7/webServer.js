@@ -1,56 +1,19 @@
-/**
- * This builds on the webServer of previous projects in that it exports the
- * current directory via webserver listing on a hard code (see portno below)
- * port. It also establishes a connection to the MongoDB named 'project6'.
- *
- * To start the webserver run the command:
- *    node webServer.js
- *
- * Note that anyone able to connect to localhost:portNo will be able to fetch
- * any file accessible to the current user in the current directory or any of
- * its children.
- *
- * This webServer exports the following URLs:
- * /            - Returns a text status message. Good for testing web server
- *                running.
- * /test        - Returns the SchemaInfo object of the database in JSON format.
- *                This is good for testing connectivity with MongoDB.
- * /test/info   - Same as /test.
- * /test/counts - Returns the population counts of the project6 collections in the
- *                database. Format is a JSON object with properties being the
- *                collection name and the values being the counts.
- *
- * The following URLs need to be changed to fetch there reply values from the
- * database:
- * /user/list         - Returns an array containing all the User objects from
- *                      the database (JSON format).
- * /user/:id          - Returns the User object with the _id of id (JSON
- *                      format).
- * /photosOfUser/:id  - Returns an array with all the photos of the User (id).
- *                      Each photo should have all the Comments on the Photo
- *                      (JSON format).
- */
-
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
-
-// const async = require("async");
-
 const express = require("express");
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const multer = require("multer");
+const fs = require("fs");
 const app = express();
+const bcrypt = require("bcrypt");
 
 // Load the Mongoose schema for User, Photo, and SchemaInfo
 const User = require("./schema/user.js");
 const Photo = require("./schema/photo.js");
 const SchemaInfo = require("./schema/schemaInfo.js");
+const upload = multer({ storage: multer.memoryStorage() });
 
-const session = require("express-session");
-const bodyParser = require("body-parser");
-const multer = require("multer");
-
-// XXX - Your submission should work without this line. Comment out or delete
-// this line for tests and before submission!
-// const models = require("./modelData/photoApp.js").models;
 mongoose.set("strictQuery", false);
 mongoose.connect("mongodb://127.0.0.1/project6", {
   useNewUrlParser: true,
@@ -65,7 +28,9 @@ app.get("/", function (request, response) {
   response.send("Simple web server of files from " + __dirname);
 });
 
-app.use(session({secret: "secretKey", resave: false, saveUninitialized: false}));
+app.use(
+  session({ secret: "secretKey", resave: false, saveUninitialized: false })
+);
 app.use(bodyParser.json());
 
 /**
@@ -141,15 +106,16 @@ app.get("/test/:p1", async function (request, response) {
  * URL /user/list - Returns all the User objects with their photo and comment counts.
  */
 app.get("/user/list", async function (request, response) {
+  if (!request.session.user) return response.status(401).send("Unauthorized");
   try {
     const users = await User.find(
       {},
       { _id: 1, first_name: 1, last_name: 1 }
     ).lean();
-    response.status(200).json(users);
+    return response.status(200).json(users);
   } catch (err) {
     console.error("Error in /user/list:", err);
-    response.status(500).json(err);
+    return response.status(500).json(err);
   }
 });
 
@@ -157,6 +123,7 @@ app.get("/user/list", async function (request, response) {
  * URL /user/:id - Returns the information for User (id).
  */
 app.get("/user/:id", async function (request, response) {
+  if (!request.session.user) return response.status(401).send("Unauthorized");
   const id = request.params.id;
   try {
     const users = await User.findById(id, {
@@ -169,13 +136,12 @@ app.get("/user/:id", async function (request, response) {
     });
     if (!users) {
       console.log("User with _id:" + id + " not found.");
-      response.status(400).send("Not found");
-      return;
+      return response.status(400).send("Not found");
     }
-    response.status(200).send(users);
+    return response.status(200).send(users);
   } catch (err) {
     console.error("Error in /user/list:", err);
-    response.status(400).send("Invalid user id");
+    return response.status(400).send("Invalid user id");
   }
 });
 
@@ -183,6 +149,7 @@ app.get("/user/:id", async function (request, response) {
  * URL /photosOfUser/:id - Returns the Photos for User (id).
  */
 app.get("/photosOfUser/:id", async function (request, response) {
+  if (!request.session.user) return response.status(401).send("Unauthorized");
   const userId = request.params.id;
   try {
     const photos = await Photo.find(
@@ -251,13 +218,14 @@ const server = app.listen(3000, function () {
  * URL /user/:id/photoCount - Returns the number of photos for User (id).
  */
 app.get("/user/:id/photoCount", async function (request, response) {
+  if (!request.session.user) return response.status(401).send("Unauthorized");
   const userId = request.params.id;
   try {
     const photoCount = await Photo.countDocuments({ user_id: userId });
-    response.status(200).json({ count: photoCount });
+    return response.status(200).json({ count: photoCount });
   } catch (err) {
     console.error("Error fetching photo count for user:", err);
-    response.status(400).json(err);
+    return response.status(400).json(err);
   }
 });
 
@@ -265,6 +233,7 @@ app.get("/user/:id/photoCount", async function (request, response) {
  * URL /user/:id/commentCount - Returns the count of comments authored by the user with _id of id.
  */
 app.get("/user/:id/commentCount", async function (request, response) {
+  if (!request.session.user) return response.status(401).send("Unauthorized");
   const userId = request.params.id;
   try {
     const photos = await Photo.find({ "comments.user_id": userId });
@@ -286,6 +255,7 @@ app.get("/user/:id/commentCount", async function (request, response) {
  * URL /user/:id/comments - Returns all comments authored by the user with _id of id.
  */
 app.get("/user/:id/comments", async function (request, response) {
+  if (!request.session.user) return response.status(401).send("Unauthorized");
   const userId = request.params.id;
   try {
     const photos = await Photo.find({ "comments.user_id": userId }).lean();
@@ -316,5 +286,109 @@ app.get("/user/:id/comments", async function (request, response) {
   } catch (err) {
     console.error("Error fetching comments for user:", err);
     return response.status(400).json(err);
+  }
+});
+
+app.post("/admin/login", async function (request, response) {
+  const { login_name, password } = request.body;
+  try {
+    const user = await User.findOne({ login_name });
+    if (!user) {
+      return response.status(400).send("Login failed: Invalid login_name");
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return response.status(400).send("Login failed: Invalid password");
+    }
+
+    request.session.user = {
+      _id: user._id,
+      first_name: user.first_name,
+      login_name: user.login_name,
+    };
+    return response.status(200).send(request.session.user);
+  } catch (err) {
+    return response.status(500).send("Internal server error");
+  }
+});
+
+app.post("/admin/logout", async function (request, response) {
+  if (request.session.user) {
+    request.session.destroy();
+    return response.status(200).send("Logged out");
+  } else {
+    return response.status(400).send("No user logged in");
+  }
+});
+
+app.post("/commentsOfPhoto/:photo_id", async function (request, response) {
+  if (!request.session.user) return response.status(401).send("Unauthorized");
+  const { comment } = request.body;
+  if (!comment) return response.status(400).send("Comment cannot be empty");
+
+  try {
+    const photo = await Photo.findById(request.params.photo_id);
+    photo.comments.push({ user_id: request.session.user._id, comment });
+    await photo.save();
+    return response.status(200).send(photo);
+  } catch (err) {
+    return response.status(500).send("Internal server error");
+  }
+});
+
+app.post(
+  "/photos/new",
+  upload.single("uploadedphoto"),
+  async function (request, response) {
+    if (!request.session.user) return response.status(401).send("Unauthorized");
+    if (!request.file) return response.status(400).send("No file uploaded");
+
+    try {
+      const fileName = `U${Date.now()}_${request.file.originalname}`;
+      fs.writeFileSync(`./images/${fileName}`, request.file.buffer);
+
+      const newPhoto = new Photo({
+        user_id: request.session.user._id,
+        file_name: fileName,
+      });
+      await newPhoto.save();
+      return response.status(201).send(newPhoto);
+    } catch (err) {
+      return response.status(500).send("Internal server error");
+    }
+  }
+);
+
+app.post("/user", async function (request, response) {
+  const {
+    login_name,
+    password,
+    first_name,
+    last_name,
+    location,
+    description,
+    occupation,
+  } = request.body;
+  if (!login_name || !password || !first_name || !last_name) {
+    return response.status(400).send("All fields are required");
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      login_name,
+      password: hashedPassword,
+      first_name,
+      last_name,
+      location,
+      description,
+      occupation,
+    });
+    await newUser.save();
+    return response
+      .status(201)
+      .send({ message: "User registered successfully" });
+  } catch (err) {
+    return response.status(500).send("Internal server error");
   }
 });

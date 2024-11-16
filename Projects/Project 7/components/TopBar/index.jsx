@@ -6,13 +6,14 @@ import {
   Typography,
   Checkbox,
   FormControlLabel,
+  Button,
 } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
 
 import "./styles.css";
 
-function TopBar({ advancedFeatures, setAdvancedFeatures }) {
+function TopBar({ advancedFeatures, setAdvancedFeatures, onLogout }) {
   const location = useLocation();
   const userId = location.pathname.split("/")[2];
   const [version, setVersion] = useState("");
@@ -50,8 +51,15 @@ function TopBar({ advancedFeatures, setAdvancedFeatures }) {
     <AppBar className="topbar-appBar" position="absolute">
       <Toolbar>
         <Typography variant="h5" color="inherit" style={{ flexGrow: 1 }}>
-          Thien Nguyen
+          {user ? `Hi ${user.first_name}` : "Please Login"}
         </Typography>
+        {user ? (
+          <Button color="inherit" onClick={onLogout}>
+            Logout
+          </Button>
+        ) : (
+          <Typography color="inherit">Welcome</Typography>
+        )}
         <Typography variant="h5" color="inherit" paddingRight="10px">
           {topBarText} - Version: {version}
         </Typography>
