@@ -15,7 +15,7 @@ const SchemaInfo = require("./schema/schemaInfo.js");
 const upload = multer({ storage: multer.memoryStorage() });
 
 mongoose.set("strictQuery", false);
-mongoose.connect("mongodb://127.0.0.1/project6", {
+mongoose.connect("mongodb://127.0.0.1/project7", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
