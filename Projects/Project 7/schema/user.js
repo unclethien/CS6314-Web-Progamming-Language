@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
   location: String,
   description: String,
   occupation: String,
+<<<<<<< HEAD
   login_name: { 
     type: String, 
     required: true, 
@@ -48,6 +49,10 @@ userSchema.pre('save', async function(next) {
   }
   
   next();
+=======
+  login_name: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+>>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
 });
 
 /**

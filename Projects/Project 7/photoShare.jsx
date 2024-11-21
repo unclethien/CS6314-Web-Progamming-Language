@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, {useState, useEffect} from "react";
+=======
+import React, {useState} from "react";
+>>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
 import ReactDOM from "react-dom/client";
 import { Grid, Typography, Paper } from "@mui/material";
 import { HashRouter, Route, Routes, useParams, Navigate } from "react-router-dom";
@@ -44,6 +48,7 @@ function PhotoShare() {
   const handleToggleAdvancedFeatures = () => {
     setAdvancedFeaturesEnabled(!advancedFeaturesEnabled);
   };
+<<<<<<< HEAD
 
   useEffect(() => {
     // Check for existing session when app loads
@@ -56,6 +61,8 @@ function PhotoShare() {
         setUser(null);
       });
   }, []); // Empty dependency array means this runs once on mount
+=======
+>>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
 
   return (
     <HashRouter>
