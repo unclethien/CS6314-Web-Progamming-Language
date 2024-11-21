@@ -1,82 +1,99 @@
-/* eslint-disable react/jsx-wrap-multilines */
-import React, { useEffect, useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Checkbox,
-  FormControlLabel,
-  Button,
-} from "@mui/material";
-import { useLocation } from "react-router-dom";
-import fetchModel from "../../lib/fetchModelData";
+import React, { useState, useEffect } from 'react';
+import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import { useLocation } from 'react-router-dom';
+import axios from 'axios';
+import PhotoUpload from '../PhotoUpload';
 
-import "./styles.css";
-
-function TopBar({ advancedFeatures, setAdvancedFeatures, onLogout }) {
+function TopBar({toggleAdvancedFeatures, user, onLogout}) {
   const location = useLocation();
   const userId = location.pathname.split("/")[2];
+  const [selectedUserName, setSelectedUserName] = useState("");
   const [version, setVersion] = useState("");
-  const [user, setUser] = useState(null);
+  const [advancedFeatures, setAdvancedFeatures] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+
+  const handleAdvancedFeatures = () => {
+    const newAdvancedFeaturesState = !advancedFeatures;
+    setAdvancedFeatures(newAdvancedFeaturesState);
+    toggleAdvancedFeatures(newAdvancedFeaturesState);
+  };
+
+  const handleLogout = () => {
+    onLogout();
+  };
+
+  const handleUploadSuccess = () => {
+    setUploadDialogOpen(false);
+  };
 
   useEffect(() => {
-    fetchModel("http://localhost:3000/test/info")
-      .then((response) => {
-        setVersion(response.data.__v);
-      })
-      .catch((error) => {
-        console.error("Error fetching version info:", error);
-      });
+    axios.get("/test/info")
+      .then(response => setVersion(response.data.__v))
+      .catch(error => console.error("Error fetching version info:", error));
+  }, []);
 
+  useEffect(() => {
     if (userId) {
-      fetchModel(`http://localhost:3000/user/${userId}`)
-        .then((response) => {
-          setUser(response.data);
-        })
-        .catch((error) => {
-          console.error("Error fetching user details:", error);
+      axios.get(`/user/${userId}`)
+        .then(response => setSelectedUserName(`${response.data.first_name} ${response.data.last_name}`))
+        .catch(error => {
+          console.error("Error fetching user data:", error);
+          setSelectedUserName("User not found");
         });
+    } else {
+      setSelectedUserName("");
     }
   }, [userId]);
 
-  let topBarText = "Thien Nguyen";
-
-  if (location.pathname.startsWith("/users/") && user) {
-    topBarText = `${user.first_name} ${user.last_name}`;
-  } else if (location.pathname.startsWith("/photos/") && user) {
-    topBarText = `Photos of ${user.first_name} ${user.last_name}`;
-  }
-
   return (
-    <AppBar className="topbar-appBar" position="absolute">
-      <Toolbar>
-        <Typography variant="h5" color="inherit" style={{ flexGrow: 1 }}>
-          {user ? `Hi ${user.first_name}` : "Please Login"}
+    <AppBar position="absolute">
+      <Toolbar style={{ justifyContent: "space-between" }}>
+        <Typography variant="h5">Nhat Truong {version && `(v${version})`}</Typography>
+        <Typography variant="h6">
+          {user ? (
+            location.pathname.includes("/photos") 
+              ? `Photos of ${selectedUserName}` 
+              : `Welcome, ${user.first_name} ${user.last_name}`
+          ) : (
+            "Please Login"
+          )}
         </Typography>
-        {user ? (
-          <Button color="inherit" onClick={onLogout}>
-            Logout
-          </Button>
-        ) : (
-          <Typography color="inherit">Welcome</Typography>
-        )}
-        <Typography variant="h5" color="inherit" paddingRight="10px">
-          {topBarText} - Version: {version}
-        </Typography>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={advancedFeatures}
-              onChange={() => setAdvancedFeatures(!advancedFeatures)}
-              inputProps={{ "aria-label": "Enable Advanced Features" }}
-              color="success"
-            />
-          }
-          label="Enable Advanced Features"
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <input
+            type="checkbox"
+            checked={advancedFeatures}
+            onChange={handleAdvancedFeatures}
+          />
+          <span>Enable Advanced Features</span>
+          {user && (
+            <>
+              <Button 
+                color="inherit" 
+                onClick={() => setUploadDialogOpen(true)}
+              >
+                Add Photo
+              </Button>
+              <Button 
+                color="inherit" 
+                onClick={handleLogout}
+                style={{ marginLeft: '10px' }}
+              >
+                Logout
+              </Button>
+            </>
+          )}
+        </div>
       </Toolbar>
+      {user && (
+        <PhotoUpload 
+          open={uploadDialogOpen}
+          onClose={() => setUploadDialogOpen(false)}
+          onUploadSuccess={handleUploadSuccess}
+        />
+      )}
     </AppBar>
   );
 }
 
 export default TopBar;
+

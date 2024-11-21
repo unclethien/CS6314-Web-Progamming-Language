@@ -6,15 +6,8 @@
     "plugin:react/recommended"
   ],
   "parser": "@babel/eslint-parser",
-  "parserOptions": {
-    "ecmaVersion": 2022,
-    "requireConfigFile": false,
-    "babelOptions": {
-      "presets": ["@babel/preset-react"]
-    }
-  },
   "rules": {
-    // rules
+    // CS 142 rules
     "no-console": 0,
     "react/prop-types": "off",
     "no-empty": ["error", { "allowEmptyCatch": true }],

@@ -12,18 +12,36 @@
  */
 function fetchModel(url) {
   return new Promise((resolve, reject) => {
+    console.log(url);
+
+    // Use fetch API to make a GET request
     fetch(url)
-      .then((response) => {
+      // eslint-disable-next-line consistent-return
+      .then(response => {
         if (!response.ok) {
-          throw new Error({
+          // Reject the promise if response status is not OK (200-299)
+          // eslint-disable-next-line prefer-promise-reject-errors
+          reject({
             status: response.status,
-            statusText: response.statusText,
+            statusText: response.statusText
           });
+        } else {
+          // If successful, parse JSON
+          return response.json();
         }
-        return response.json();
       })
-      .then((data) => resolve({ data }))
-      .catch((error) => reject(error));
+      .then(data => {
+        // Resolve the promise with the data inside an object
+        resolve({ data });
+      })
+      .catch(() => {
+        // Handle network or fetch-level errors
+        // eslint-disable-next-line prefer-promise-reject-errors
+        reject({
+          status: 500,
+          statusText: "Network Error"
+        });
+      });
   });
 }
 

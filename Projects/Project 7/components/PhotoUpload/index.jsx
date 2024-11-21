@@ -1,39 +1,93 @@
-import React, { useRef } from "react";
-import { Button, Box, Typography } from "@mui/material";
-import axios from "axios";
+import React, { useState } from 'react';
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Typography,
+  Snackbar
+} from '@mui/material';
+import axios from 'axios';
 
-function PhotoUpload() {
-  const fileInput = useRef();
+function PhotoUpload({ open, onClose, onUploadSuccess }) {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleFileSelect = (event) => {
+    setSelectedFile(event.target.files[0]);
+    setError('');
+  };
 
   const handleUpload = async () => {
+    if (!selectedFile) {
+      setError('Please select a file first');
+      return;
+    }
+
+    setUploading(true);
     const formData = new FormData();
-    formData.append("uploadedphoto", fileInput.current.files[0]);
+    formData.append('uploadedphoto', selectedFile);
+
     try {
-      const response = await axios.post("/photos/new", formData);
-      console.log(response.data);
-    } catch {
-      alert("Error uploading photo");
+      const response = await axios.post('/photos/new', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      setSelectedFile(null);
+      setShowSuccess(true);
+      if (onUploadSuccess) {
+        onUploadSuccess(response.data);
+      }
+      onClose();
+    } catch (err) {
+      setError('Failed to upload photo. Please try again.');
+      console.error('Upload error:', err);
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 2,
-        width: 300,
-        margin: "auto",
-      }}
-    >
-      <Typography variant="h5" align="center">
-        Upload Photo
-      </Typography>
-      <input type="file" ref={fileInput} style={{ marginBottom: 10 }} />
-      <Button variant="contained" color="primary" onClick={handleUpload}>
-        Upload
-      </Button>
-    </Box>
+    <>
+      <Dialog open={open} onClose={() => onClose()}>
+        <DialogTitle>Add Photo</DialogTitle>
+        <DialogContent>
+          <input
+            accept="image/*"
+            type="file"
+            onChange={handleFileSelect}
+            style={{ marginTop: '10px' }}
+          />
+          {error && (
+            <Typography color="error" style={{ marginTop: '10px' }}>
+              {error}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => onClose()}>Cancel</Button>
+          <Button 
+            onClick={handleUpload} 
+            disabled={!selectedFile || uploading}
+            variant="contained"
+          >
+            {uploading ? <CircularProgress size={24} /> : 'Upload'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={showSuccess}
+        autoHideDuration={3000}
+        onClose={() => setShowSuccess(false)}
+        message="Photo uploaded successfully"
+      />
+    </>
   );
 }
 
