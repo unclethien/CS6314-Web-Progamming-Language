@@ -60,6 +60,8 @@ mongoose.connect("mongodb://127.0.0.1/project7", {
 // (http://expressjs.com/en/starter/static-files.html) do all the work for us.
 app.use(express.static(__dirname));
 
+app.use("/images", express.static("images"));
+
 app.get("/", function (request, response) {
   response.send("Simple web server of files from " + __dirname);
 });
@@ -196,7 +198,8 @@ app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
     const photos = await Photo.find({ user_id: userId })
       .populate({
         path: "comments.user_id",
-        select: "_id first_name last_name",
+        select: "_id first_name last_name location description occupation",
+        model: "User",
       })
       .sort({ date_time: 1 })
       .lean();
@@ -270,6 +273,7 @@ app.post("/admin/login", async (request, response) => {
   }
 });
 
+// eslint-disable-next-line consistent-return
 app.post("/admin/logout", (request, response) => {
   if (!request.session.user) {
     return response.status(400).json({ error: "Not logged in" });
@@ -358,6 +362,7 @@ app.post("/admin/register", async (request, response) => {
       _id: newUser._id,
       first_name: newUser.first_name,
       last_name: newUser.last_name,
+      login_name: newUser.login_name,
     });
   } catch (err) {
     console.error("Error in registration:", err);
@@ -405,12 +410,10 @@ app.post("/user", async (request, response) => {
 
     // Return user data
     return response.status(200).json({
-      login_name: newUser.login_name,
+      _id: newUser._id,
       first_name: newUser.first_name,
       last_name: newUser.last_name,
-      location: newUser.location,
-      description: newUser.description,
-      occupation: newUser.occupation,
+      login_name: newUser.login_name,
     });
   } catch (err) {
     console.error("Error in registration:", err);
@@ -418,22 +421,30 @@ app.post("/user", async (request, response) => {
   }
 });
 
-// Upload
+// Update the storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./images/");
+    cb(null, "images/"); // Make sure path is relative and without leading ./
   },
   filename: function (req, file, cb) {
-    // Generate unique filename using timestamp
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const extension = file.originalname.split(".").pop();
-    cb(null, `${uniqueSuffix}.${extension}`);
+    // Keep original filename to ensure we can find it later
+    cb(null, file.originalname);
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    // Accept only image files
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed"));
+    }
+  },
+});
 
-// eslint-disable-next-line consistent-return
+// Update the upload endpoint
 app.post(
   "/photos/new",
   requireLogin,
@@ -445,14 +456,22 @@ app.post(
 
     try {
       const photo = new Photo({
-        file_name: req.file.filename,
+        file_name: req.file.originalname, // Use original filename
         date_time: new Date(),
         user_id: req.session.user._id,
         comments: [],
       });
 
-      await photo.save();
-      return res.status(200).json(photo);
+      const savedPhoto = await photo.save();
+
+      // Return full photo object
+      return res.status(200).json({
+        _id: savedPhoto._id,
+        file_name: savedPhoto.file_name,
+        date_time: savedPhoto.date_time,
+        user_id: savedPhoto.user_id,
+        comments: savedPhoto.comments,
+      });
     } catch (err) {
       console.error("Error uploading photo:", err);
       return res.status(400).json({ error: err.message });
