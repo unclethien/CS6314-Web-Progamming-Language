@@ -63,13 +63,15 @@ app.use(express.static(__dirname));
 app.get("/", function (request, response) {
   response.send("Simple web server of files from " + __dirname);
 });
-app.use(session({secret: "secretKey", resave: false, saveUninitialized: false}));
+app.use(
+  session({ secret: "secretKey", resave: false, saveUninitialized: false })
+);
 app.use(bodyParser.json());
 /**
  * Use express to handle argument passing in the URL. This .get will cause
  * express to accept URLs with /test/<something> and return the something in
  * request.params.p1.
- * 
+ *
  * If implement the get as follows:
  * /test        - Returns the SchemaInfo object of the database in JSON format.
  *                This is good for testing connectivity with MongoDB.
@@ -87,49 +89,46 @@ app.get("/test/:p1", async function (request, response) {
   if (param === "info") {
     // Fetch the SchemaInfo. There should only one of them. The query of {} will
     // match it.
-    try{
-
+    try {
       const info = await SchemaInfo.find({});
       if (info.length === 0) {
-            // No SchemaInfo found - return 500 error
-            return response.status(500).send("Missing SchemaInfo");
+        // No SchemaInfo found - return 500 error
+        return response.status(500).send("Missing SchemaInfo");
       }
       console.log("SchemaInfo", info[0]);
       return response.json(info[0]); // Use `json()` to send JSON responses
-    } catch(err){
+    } catch (err) {
       // Handle any errors that occurred during the query
       console.error("Error in /test/info:", err);
       return response.status(500).json(err); // Send the error as JSON
     }
-
   } else if (param === "counts") {
-   // If the request parameter is "counts", we need to return the counts of all collections.
-// To achieve this, we perform asynchronous calls to each collection using `Promise.all`.
-// We store the collections in an array and use `Promise.all` to execute each `.countDocuments()` query concurrently.
-   
-    
-const collections = [
-  { name: "user", collection: User },
-  { name: "photo", collection: Photo },
-  { name: "schemaInfo", collection: SchemaInfo },
-];
+    // If the request parameter is "counts", we need to return the counts of all collections.
+    // To achieve this, we perform asynchronous calls to each collection using `Promise.all`.
+    // We store the collections in an array and use `Promise.all` to execute each `.countDocuments()` query concurrently.
 
-try {
-  await Promise.all(
-    collections.map(async (col) => {
-      col.count = await col.collection.countDocuments({});
-      return col;
-    })
-  );
+    const collections = [
+      { name: "user", collection: User },
+      { name: "photo", collection: Photo },
+      { name: "schemaInfo", collection: SchemaInfo },
+    ];
 
-  const obj = {};
-  for (let i = 0; i < collections.length; i++) {
-    obj[collections[i].name] = collections[i].count;
-  }
-  return response.end(JSON.stringify(obj));
-} catch (err) {
-  return response.status(500).send(JSON.stringify(err));
-}
+    try {
+      await Promise.all(
+        collections.map(async (col) => {
+          col.count = await col.collection.countDocuments({});
+          return col;
+        })
+      );
+
+      const obj = {};
+      for (let i = 0; i < collections.length; i++) {
+        obj[collections[i].name] = collections[i].count;
+      }
+      return response.end(JSON.stringify(obj));
+    } catch (err) {
+      return response.status(500).send(JSON.stringify(err));
+    }
   } else {
     // If we know understand the parameter we return a (Bad Parameter) (400)
     // status.
@@ -141,7 +140,7 @@ try {
 // eslint-disable-next-line consistent-return
 const requireLogin = (req, res, next) => {
   if (!req.session.user) {
-    return res.status(401).json({ error: 'User not logged in' });
+    return res.status(401).json({ error: "User not logged in" });
   }
   next();
 };
@@ -166,7 +165,10 @@ app.get("/user/list", requireLogin, async function (request, response) {
 app.get("/user/:id", requireLogin, async function (request, response) {
   const id = request.params.id;
   try {
-    const user = await User.findById(id, "_id first_name last_name location description occupation"); // Select specific fields if needed
+    const user = await User.findById(
+      id,
+      "_id first_name last_name location description occupation"
+    ); // Select specific fields if needed
     if (!user) {
       console.log("User with _id:" + id + " not found.");
       return response.status(404).send("Not found");
@@ -184,17 +186,17 @@ app.get("/user/:id", requireLogin, async function (request, response) {
 // eslint-disable-next-line consistent-return
 app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
   const userId = request.params.id;
-  
+
   // Check if ID is valid MongoDB ObjectId
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return response.status(400).json({error: "Invalid user ID format"});
+    return response.status(400).json({ error: "Invalid user ID format" });
   }
 
   try {
     const photos = await Photo.find({ user_id: userId })
       .populate({
-        path: 'comments.user_id',
-        select: '_id first_name last_name location description occupation'
+        path: "comments.user_id",
+        select: "_id first_name last_name",
       })
       .sort({ date_time: 1 })
       .lean();
@@ -202,41 +204,42 @@ app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
     // Note: Changed from checking !photos to checking photos.length
     if (!photos || photos.length === 0) {
       console.log("Photos for user with _id:" + userId + " not found.");
-      return response.status(400).json({error: "No photos found for user"});
+      return response.status(400).json({ error: "No photos found for user" });
     }
 
-    const transformedPhotos = photos.map(photo => ({
+    const transformedPhotos = photos.map((photo) => ({
       _id: photo._id,
       file_name: photo.file_name,
       date_time: photo.date_time,
       user_id: photo.user_id,
-      comments: photo.comments.map(comment => ({
+      comments: photo.comments.map((comment) => ({
         comment: comment.comment,
         date_time: comment.date_time,
         _id: comment._id,
-        user: comment.user_id ? {
-          _id: comment.user_id._id,
-          first_name: comment.user_id.first_name,
-          last_name: comment.user_id.last_name,
-          location: comment.user_id.location || "",
-          description: comment.user_id.description || "",
-          occupation: comment.user_id.occupation || ""
-        } : null
-      }))
+        user: comment.user_id
+          ? {
+              _id: comment.user_id._id,
+              first_name: comment.user_id.first_name,
+              last_name: comment.user_id.last_name,
+            }
+          : null,
+      })),
     }));
 
     return response.status(200).json(transformedPhotos);
   } catch (err) {
     console.error("Error fetching photos for user:", err);
-    return response.status(400).json({error: err.message});
+    return response.status(400).json({ error: err.message });
   }
 });
 
 app.post("/admin/login", async (request, response) => {
   const { login_name, password } = request.body;
-  
+
   if (!login_name || !password) {
-    return response.status(400).json({error: "Missing login_name or password"});
+    return response
+      .status(400)
+      .json({ error: "Missing login_name or password" });
   }
 
   try {
@@ -246,39 +249,39 @@ app.post("/admin/login", async (request, response) => {
     );
 
     if (!user) {
-      return response.status(400).json({error: "Invalid credentials"});
+      return response.status(400).json({ error: "Invalid credentials" });
     }
 
     // Store user info in session
     request.session.user = {
       _id: user._id,
       first_name: user.first_name,
-      last_name: user.last_name
+      last_name: user.last_name,
     };
 
     return response.status(200).json({
       _id: user._id,
       first_name: user.first_name,
-      last_name: user.last_name
+      last_name: user.last_name,
     });
   } catch (err) {
     console.error("Error in login:", err);
-    return response.status(500).json({error: "Internal server error"});
+    return response.status(500).json({ error: "Internal server error" });
   }
 });
 
 app.post("/admin/logout", (request, response) => {
   if (!request.session.user) {
-    return response.status(400).json({error: "Not logged in"});
+    return response.status(400).json({ error: "Not logged in" });
   }
 
   request.session.destroy((err) => {
     if (err) {
       console.error("Error logging out:", err);
-      return response.status(500).json({error: "Error during logout"});
+      return response.status(500).json({ error: "Error during logout" });
     }
-    response.clearCookie('connect.sid'); // Clear session cookie
-    return response.status(200).json({message: "Logged out successfully"});
+    response.clearCookie("connect.sid"); // Clear session cookie
+    return response.status(200).json({ message: "Logged out successfully" });
   });
 });
 
@@ -299,7 +302,7 @@ app.post("/commentsOfPhoto/:photo_id", async (request, response) => {
     photo.comments.push({
       comment: comment,
       user_id: request.session.user._id,
-      date_time: new Date()
+      date_time: new Date(),
     });
 
     await photo.save();
@@ -311,7 +314,15 @@ app.post("/commentsOfPhoto/:photo_id", async (request, response) => {
 });
 
 app.post("/admin/register", async (request, response) => {
-  const { login_name, password, first_name, last_name, location, description, occupation } = request.body;
+  const {
+    login_name,
+    password,
+    first_name,
+    last_name,
+    location,
+    description,
+    occupation,
+  } = request.body;
 
   // Validate required fields
   if (!login_name || !password || !first_name || !last_name) {
@@ -320,10 +331,10 @@ app.post("/admin/register", async (request, response) => {
 
   try {
     // Check if user already exists - use case-insensitive search
-    const existingUser = await User.findOne({ 
-      login_name: { $regex: new RegExp(`^${login_name}$`, 'i') } 
+    const existingUser = await User.findOne({
+      login_name: { $regex: new RegExp(`^${login_name}$`, "i") },
     });
-    
+
     if (existingUser) {
       return response.status(400).json({ error: "User already exists" });
     }
@@ -334,9 +345,9 @@ app.post("/admin/register", async (request, response) => {
       password,
       first_name,
       last_name,
-      location: location, 
+      location: location,
       description: description,
-      occupation: occupation 
+      occupation: occupation,
     });
 
     // Log the user in by creating a session
@@ -346,9 +357,8 @@ app.post("/admin/register", async (request, response) => {
     return response.status(200).json({
       _id: newUser._id,
       first_name: newUser.first_name,
-      last_name: newUser.last_name
+      last_name: newUser.last_name,
     });
-
   } catch (err) {
     console.error("Error in registration:", err);
     return response.status(500).send("Internal Server Error");
@@ -357,7 +367,15 @@ app.post("/admin/register", async (request, response) => {
 
 // Add this endpoint as an alias for /admin/register
 app.post("/user", async (request, response) => {
-  const { login_name, password, first_name, last_name, location, description, occupation } = request.body;
+  const {
+    login_name,
+    password,
+    first_name,
+    last_name,
+    location,
+    description,
+    occupation,
+  } = request.body;
 
   // Validate required fields
   if (!login_name || !password || !first_name || !last_name) {
@@ -366,10 +384,10 @@ app.post("/user", async (request, response) => {
 
   try {
     // Check if user already exists - use case-insensitive search
-    const existingUser = await User.findOne({ 
-      login_name: { $regex: new RegExp(`^${login_name}$`, 'i') } 
+    const existingUser = await User.findOne({
+      login_name: { $regex: new RegExp(`^${login_name}$`, "i") },
     });
-    
+
     if (existingUser) {
       return response.status(400).json({ error: "User already exists" });
     }
@@ -380,60 +398,67 @@ app.post("/user", async (request, response) => {
       password,
       first_name,
       last_name,
-      location: location || "", 
+      location: location || "",
       description: description || "",
-      occupation: occupation || "" 
+      occupation: occupation || "",
     });
 
     // Return user data
     return response.status(200).json({
-      _id: newUser._id,
+      login_name: newUser.login_name,
       first_name: newUser.first_name,
-      last_name: newUser.last_name
+      last_name: newUser.last_name,
+      location: newUser.location,
+      description: newUser.description,
+      occupation: newUser.occupation,
     });
-
   } catch (err) {
     console.error("Error in registration:", err);
     return response.status(500).send("Internal Server Error");
   }
 });
 
-// Upload 
+// Upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, './images/');
+    cb(null, "./images/");
   },
   filename: function (req, file, cb) {
     // Generate unique filename using timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const extension = file.originalname.split('.').pop();
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const extension = file.originalname.split(".").pop();
     cb(null, `${uniqueSuffix}.${extension}`);
-  }
+  },
 });
 
 const upload = multer({ storage: storage });
 
 // eslint-disable-next-line consistent-return
-app.post('/photos/new', requireLogin, upload.single('uploadedphoto'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({error: 'No photo uploaded'});
-  }
+app.post(
+  "/photos/new",
+  requireLogin,
+  upload.single("uploadedphoto"),
+  async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No photo uploaded" });
+    }
 
-  try {
-    const photo = new Photo({
-      file_name: req.file.filename,
-      date_time: new Date(),
-      user_id: req.session.user._id,
-      comments: []
-    });
+    try {
+      const photo = new Photo({
+        file_name: req.file.filename,
+        date_time: new Date(),
+        user_id: req.session.user._id,
+        comments: [],
+      });
 
-    await photo.save();
-    res.status(200).json(photo);
-  } catch (err) {
-    console.error('Error uploading photo:', err);
-    res.status(400).json({error: err.message});
+      await photo.save();
+      return res.status(200).json(photo);
+    } catch (err) {
+      console.error("Error uploading photo:", err);
+      return res.status(400).json({ error: err.message });
+    }
   }
-});
+);
 
 const server = app.listen(3000, function () {
   const port = server.address().port;
