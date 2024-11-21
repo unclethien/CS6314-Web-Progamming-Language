@@ -60,22 +60,12 @@ mongoose.connect("mongodb://127.0.0.1/project7", {
 // (http://expressjs.com/en/starter/static-files.html) do all the work for us.
 app.use(express.static(__dirname));
 
-<<<<<<< HEAD
 app.use('/images', express.static('images'));
-=======
-app.use("/images", express.static("images"));
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
 
 app.get("/", function (request, response) {
   response.send("Simple web server of files from " + __dirname);
 });
-<<<<<<< HEAD
 app.use(session({secret: "secretKey", resave: false, saveUninitialized: false}));
-=======
-app.use(
-  session({ secret: "secretKey", resave: false, saveUninitialized: false })
-);
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
 app.use(bodyParser.json());
 /**
  * Use express to handle argument passing in the URL. This .get will cause
@@ -153,11 +143,7 @@ try {
 // eslint-disable-next-line consistent-return
 const requireLogin = (req, res, next) => {
   if (!req.session.user) {
-<<<<<<< HEAD
     return res.status(401).json({ error: 'User not logged in' });
-=======
-    return res.status(401).json({ error: "User not logged in" });
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
   }
   next();
 };
@@ -182,14 +168,7 @@ app.get("/user/list", requireLogin, async function (request, response) {
 app.get("/user/:id", requireLogin, async function (request, response) {
   const id = request.params.id;
   try {
-<<<<<<< HEAD
     const user = await User.findById(id, "_id first_name last_name location description occupation"); // Select specific fields if needed
-=======
-    const user = await User.findById(
-      id,
-      "_id first_name last_name location description occupation"
-    ); // Select specific fields if needed
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
     if (!user) {
       console.log("User with _id:" + id + " not found.");
       return response.status(404).send("Not found");
@@ -207,7 +186,6 @@ app.get("/user/:id", requireLogin, async function (request, response) {
 // eslint-disable-next-line consistent-return
 app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
   const userId = request.params.id;
-<<<<<<< HEAD
   
   // Check if ID is valid MongoDB ObjectId
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -220,20 +198,6 @@ app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
         path: 'comments.user_id',
         select: '_id first_name last_name location description occupation',
         model: 'User'  
-=======
-
-  // Check if ID is valid MongoDB ObjectId
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return response.status(400).json({ error: "Invalid user ID format" });
-  }
-
-  try {
-    const photos = await Photo.find({ user_id: userId })
-      .populate({
-        path: "comments.user_id",
-        select: "_id first_name last_name location description occupation",
-        model: "User",
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
       })
       .sort({ date_time: 1 })
       .lean();
@@ -241,22 +205,14 @@ app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
     // Note: Changed from checking !photos to checking photos.length
     if (!photos || photos.length === 0) {
       console.log("Photos for user with _id:" + userId + " not found.");
-<<<<<<< HEAD
       return response.status(400).json({error: "No photos found for user"});
     }
 
     const transformedPhotos = photos.map(photo => ({
-=======
-      return response.status(400).json({ error: "No photos found for user" });
-    }
-
-    const transformedPhotos = photos.map((photo) => ({
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
       _id: photo._id,
       file_name: photo.file_name,
       date_time: photo.date_time,
       user_id: photo.user_id,
-<<<<<<< HEAD
       comments: photo.comments.map(comment => ({
         comment: comment.comment,
         date_time: comment.date_time,
@@ -267,26 +223,11 @@ app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
           last_name: comment.user_id.last_name
         } : null
       }))
-=======
-      comments: photo.comments.map((comment) => ({
-        comment: comment.comment,
-        date_time: comment.date_time,
-        _id: comment._id,
-        user: comment.user_id
-          ? {
-              _id: comment.user_id._id,
-              first_name: comment.user_id.first_name,
-              last_name: comment.user_id.last_name,
-            }
-          : null,
-      })),
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
     }));
 
     return response.status(200).json(transformedPhotos);
   } catch (err) {
     console.error("Error fetching photos for user:", err);
-<<<<<<< HEAD
     return response.status(400).json({error: err.message});
   }
 });
@@ -325,73 +266,22 @@ app.post("/admin/login", async (req, res) => {
   } catch (err) {
     console.error('Error in login:', err);
     res.status(400).json({ error: err.message });
-=======
-    return response.status(400).json({ error: err.message });
-  }
-});
-
-app.post("/admin/login", async (request, response) => {
-  const { login_name, password } = request.body;
-
-  if (!login_name || !password) {
-    return response
-      .status(400)
-      .json({ error: "Missing login_name or password" });
-  }
-
-  try {
-    const user = await User.findOne(
-      { login_name: login_name, password: password },
-      "_id first_name last_name"
-    );
-
-    if (!user) {
-      return response.status(400).json({ error: "Invalid credentials" });
-    }
-
-    // Store user info in session
-    request.session.user = {
-      _id: user._id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-    };
-
-    return response.status(200).json({
-      _id: user._id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-    });
-  } catch (err) {
-    console.error("Error in login:", err);
-    return response.status(500).json({ error: "Internal server error" });
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
   }
 });
 
 // eslint-disable-next-line consistent-return
 app.post("/admin/logout", (request, response) => {
   if (!request.session.user) {
-<<<<<<< HEAD
     return response.status(400).json({error: "Not logged in"});
-=======
-    return response.status(400).json({ error: "Not logged in" });
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
   }
 
   request.session.destroy((err) => {
     if (err) {
       console.error("Error logging out:", err);
-<<<<<<< HEAD
       return response.status(500).json({error: "Error during logout"});
     }
     response.clearCookie('connect.sid'); // Clear session cookie
     return response.status(200).json({message: "Logged out successfully"});
-=======
-      return response.status(500).json({ error: "Error during logout" });
-    }
-    response.clearCookie("connect.sid"); // Clear session cookie
-    return response.status(200).json({ message: "Logged out successfully" });
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
   });
 });
 
@@ -412,11 +302,7 @@ app.post("/commentsOfPhoto/:photo_id", async (request, response) => {
     photo.comments.push({
       comment: comment,
       user_id: request.session.user._id,
-<<<<<<< HEAD
       date_time: new Date()
-=======
-      date_time: new Date(),
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
     });
 
     await photo.save();
@@ -427,7 +313,6 @@ app.post("/commentsOfPhoto/:photo_id", async (request, response) => {
   }
 });
 
-<<<<<<< HEAD
 // Make sure this is at the top with other requires
 const password = require('./password');
 
@@ -476,35 +361,10 @@ app.post("/user", async (request, response) => {
 
     // Check for existing user
     const existingUser = await User.findOne({ login_name });
-=======
-app.post("/admin/register", async (request, response) => {
-  const {
-    login_name,
-    password,
-    first_name,
-    last_name,
-    location,
-    description,
-    occupation,
-  } = request.body;
-
-  // Validate required fields
-  if (!login_name || !password || !first_name || !last_name) {
-    return response.status(400).send("Missing required fields");
-  }
-
-  try {
-    // Check if user already exists - use case-insensitive search
-    const existingUser = await User.findOne({
-      login_name: { $regex: new RegExp(`^${login_name}$`, "i") },
-    });
-
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
     if (existingUser) {
       return response.status(400).json({ error: "User already exists" });
     }
 
-<<<<<<< HEAD
     const passwordEntry = password.makePasswordEntry(plainPassword);
     const newUser = await User.create({
       login_name,
@@ -559,99 +419,17 @@ app.post("/admin/register", async (request, response) => {
   } catch (err) {
     console.error('Registration error:', err);
     return response.status(500).json({ error: err.message });
-=======
-    // Create new user
-    const newUser = await User.create({
-      login_name,
-      password,
-      first_name,
-      last_name,
-      location: location,
-      description: description,
-      occupation: occupation,
-    });
-
-    // Log the user in by creating a session
-    request.session.user = { _id: newUser._id, first_name: newUser.first_name };
-
-    // Return user data
-    return response.status(200).json({
-      _id: newUser._id,
-      first_name: newUser.first_name,
-      last_name: newUser.last_name,
-      login_name: newUser.login_name,
-    });
-  } catch (err) {
-    console.error("Error in registration:", err);
-    return response.status(500).send("Internal Server Error");
-  }
-});
-
-// Add this endpoint as an alias for /admin/register
-app.post("/user", async (request, response) => {
-  const {
-    login_name,
-    password,
-    first_name,
-    last_name,
-    location,
-    description,
-    occupation,
-  } = request.body;
-
-  // Validate required fields
-  if (!login_name || !password || !first_name || !last_name) {
-    return response.status(400).send("Missing required fields");
-  }
-
-  try {
-    // Check if user already exists - use case-insensitive search
-    const existingUser = await User.findOne({
-      login_name: { $regex: new RegExp(`^${login_name}$`, "i") },
-    });
-
-    if (existingUser) {
-      return response.status(400).json({ error: "User already exists" });
-    }
-
-    // Create new user
-    const newUser = await User.create({
-      login_name,
-      password,
-      first_name,
-      last_name,
-      location: location || "",
-      description: description || "",
-      occupation: occupation || "",
-    });
-
-    // Return user data
-    return response.status(200).json({
-      _id: newUser._id,
-      first_name: newUser.first_name,
-      last_name: newUser.last_name,
-      login_name: newUser.login_name,
-    });
-  } catch (err) {
-    console.error("Error in registration:", err);
-    return response.status(500).send("Internal Server Error");
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
   }
 });
 
 // Update the storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-<<<<<<< HEAD
     cb(null, 'images/'); // Make sure path is relative and without leading ./
-=======
-    cb(null, "images/"); // Make sure path is relative and without leading ./
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
   },
   filename: function (req, file, cb) {
     // Keep original filename to ensure we can find it later
     cb(null, file.originalname);
-<<<<<<< HEAD
   }
 });
 
@@ -718,57 +496,6 @@ app.get('/api/session/check', async (req, res) => {
   }
   res.status(401).json({ error: 'No active session' });
 });
-=======
-  },
-});
-
-const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    // Accept only image files
-    if (file.mimetype.startsWith("image/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image files are allowed"));
-    }
-  },
-});
-
-// Update the upload endpoint
-app.post(
-  "/photos/new",
-  requireLogin,
-  upload.single("uploadedphoto"),
-  async (req, res) => {
-    if (!req.file) {
-      return res.status(400).json({ error: "No photo uploaded" });
-    }
-
-    try {
-      const photo = new Photo({
-        file_name: req.file.originalname, // Use original filename
-        date_time: new Date(),
-        user_id: req.session.user._id,
-        comments: [],
-      });
-
-      const savedPhoto = await photo.save();
-
-      // Return full photo object
-      return res.status(200).json({
-        _id: savedPhoto._id,
-        file_name: savedPhoto.file_name,
-        date_time: savedPhoto.date_time,
-        user_id: savedPhoto.user_id,
-        comments: savedPhoto.comments,
-      });
-    } catch (err) {
-      console.error("Error uploading photo:", err);
-      return res.status(400).json({ error: err.message });
-    }
-  }
-);
->>>>>>> 18549f5b76820363b422b7f99bffbbfc522e49ff
 
 const server = app.listen(3000, function () {
   const port = server.address().port;

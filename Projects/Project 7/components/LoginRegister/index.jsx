@@ -27,7 +27,7 @@ function LoginRegister({onLogin}) {
   
   const handleRegister = async () => {
     try {
-      const response = await axios.post("/admin/register", {
+      const response = await axios.post("/user", {
         login_name: loginName,
         password,
         first_name: firstName,
