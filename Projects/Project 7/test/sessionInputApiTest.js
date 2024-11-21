@@ -342,18 +342,23 @@ describe("Photo App: Session and Input API Tests", function () {
           headers: {
             "Cookie": sessionCookie 
           }
-       }).then(function (response) {
-        assert.strictEqual(
-          response.status,
-          200,
-          "HTTP response status code 200"
-        );
-        const newPhoto = _.find(response.data, function (p) {
-          return p.file_name.match(uniquePhotoName);
-        });
-        assert(newPhoto, "Can not find upload photo");
-        done()
-      });
+       })
+       .then(function (response) {
+          assert.strictEqual(
+            response.status,
+            200,
+            "HTTP response status code 200"
+          );
+          const newPhoto = _.find(response.data, function (p) {
+            return p.file_name.match(uniquePhotoName);
+          });
+          assert(newPhoto, "Can not find upload photo");
+          done();
+       })
+       .catch(function (error) {
+          console.error('Error in test:', error);
+          done(error);  // Make sure we call done with the error
+       });
     });
   });
 

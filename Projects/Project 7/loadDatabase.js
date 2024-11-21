@@ -10,11 +10,14 @@
  * discarded.
  */
 
+// Set environment variable for loading
+process.env.LOADING_DATABASE = 'true';
+
 // We use the Mongoose to define the schema stored in MongoDB.
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
 mongoose.set("strictQuery", false);
-mongoose.connect("mongodb://127.0.0.1/project6", {
+mongoose.connect("mongodb://127.0.0.1/project7", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -26,6 +29,7 @@ const models = require("./modelData/photoApp.js").models;
 const User = require("./schema/user.js");
 const Photo = require("./schema/photo.js");
 const SchemaInfo = require("./schema/schemaInfo.js");
+const password = require('./password.js');
 
 const versionString = "1.0";
 
@@ -45,6 +49,7 @@ Promise.all(removePromises)
     const userModels = models.userListModel();
     const mapFakeId2RealId = {};
     const userPromises = userModels.map(function (user) {
+      const passwordEntry = password.makePasswordEntry("weak");
       return User.create({
         first_name: user.first_name,
         last_name: user.last_name,
@@ -52,7 +57,8 @@ Promise.all(removePromises)
         description: user.description,
         occupation: user.occupation,
         login_name: user.last_name.toLowerCase(),
-        password: "weak",
+        password: passwordEntry.hash,
+        salt: passwordEntry.salt
       })
         .then(function (userObj) {
           // Set the unique ID of the object. We use the MongoDB generated _id
