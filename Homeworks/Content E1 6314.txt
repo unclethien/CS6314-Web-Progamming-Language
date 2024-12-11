@@ -1,0 +1,17 @@
+CS 6314 WPL
+
+Exercise 1
+
+Due:  Friday, Aug 30th 2024 (on elearning)
+
+Go to the website https://www.freecodecamp.org/learn/2022/responsive-web-design/ and complete the exercise "Learn HTML by building a CatPhotoApp".
+
+This exercise has 69 steps. Follow the instruction given to complete each step. This site is very picky. Follow the instruction exactly. Don't leave any unnecessary white spaces, or put in any extra text. Also, make sure you understand each element you are using. Don't use them blindly. You have to learn HTML. That is the purpose of this assignment. Reference guide for HTML elements can be found in https://developer.mozilla.org/en-US/docs/Web/HTML/Element
+
+After completing the last step and before submitting, make the following changes.
+1. Change the heading 1 to "CatPhotoApp by your-name". 'your-name' is your name.
+2. The list of items that cats love is bulleted. Make necessary changes so that they are numbered.
+3. Change lasagna to your favorite food and include an appropriate picture of the food. Make sure that the displayed picture is not big irrespective of the size of the image. Hint: use width and height attributes.
+4. In the foot note add this text: "I promise that the above work was completed by me and I didn't use any else's work."
+
+Extract all the html code fragments and save them in a html file. Open the saved file in a browser and ensure that everything looks as expected. Finally, upload the file to elearning.

@@ -1,0 +1,14 @@
+CS 6314 WPL
+
+Exercise 2
+
+Due:  Friday, Sep 6th 2024 (on elearning)
+
+Go to the website https://www.freecodecamp.org/learn/2022/responsive-web-design/ and complete the exercise "Learn Basic CSS by Building a Cafe Menu".
+
+
+After completing the last step and before submitting, make the following changes.
+1. Change the items under Coffee and Desserts to your favorite items. Change the prices too.
+2. Change the name "Camper Cafe" to something else
+
+Extract all the html code fragments and save them in a html file. Open the saved file in a browser and ensure that everything looks as expected. Finally, zip the html file and upload it to elearning.
