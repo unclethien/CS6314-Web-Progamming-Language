@@ -10,45 +10,67 @@ import {
   Button,
   TextField
 } from "@mui/material";
-// import fetchModel from "../../lib/fetchModelData"; // Adjust the path as needed
-import "./styles.css"; // Import the CSS file here
 import axios from "axios";
+import PhotoUpload from '../PhotoUpload';
 
-function UserPhotos({ userId, advancedFeaturesEnabled}) {
+function UserPhotos({ userId, advancedFeaturesEnabled }) {
   const [photos, setPhotos] = useState([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const [newComment, setNewComment] = useState("");
+  const [comments, setComments] = useState({});
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+
   const refreshPhotos = () => {
     axios.get(`/photosOfUser/${userId}`)
       .then(response => {
-        setPhotos(response.data);
+        if (response.data && Array.isArray(response.data)) {
+          setPhotos(response.data);
+          const initialComments = {};
+          response.data.forEach(photo => {
+            initialComments[photo._id] = ""; // Set initial comment to empty
+          });
+          setComments(initialComments);
+        } else {
+          setPhotos([]); // Set to empty array if response is not an array
+        }
       })
       .catch(error => {
-        console.error("Error fetching photos:", error);
-        setPhotos([]);
+        if (error.response && error.response.status === 400) {
+          console.error("No photos found for this user.");
+          setPhotos([]); // Optionally set to empty array
+        } else {
+          console.error("Error fetching photos:", error);
+          setPhotos([]); // Set to empty array on other errors
+        }
       });
   };
 
   useEffect(() => {
-    refreshPhotos();
+    setPhotos([]); // Clear photos when userId changes
+    setCurrentPhotoIndex(0); // Reset photo index
+    setComments({}); // Reset comments
+    refreshPhotos(); // Fetch new photos
   }, [userId]);
 
   const handleAddComment = (photoId) => {
+    const newComment = comments[photoId];
     if (!newComment.trim()) return;
-    
+
     axios.post(`/commentsOfPhoto/${photoId}`, {
       comment: newComment
     })
       .then(() => {
-        // Refresh the photos to show the new comment
-        refreshPhotos();
-        setNewComment(""); // Clear the input
+        refreshPhotos(); // Refresh the photos to show the new comment
+        setComments(prev => ({ ...prev, [photoId]: "" })); // Clear the input for that specific photo
       })
       .catch(error => {
         console.error("Error adding comment:", error);
       });
   };
-  
+
+  const handleCommentChange = (photoId, value) => {
+    setComments(prev => ({ ...prev, [photoId]: value })); // Update the comment for the specific photo
+  };
+
   const handleNextPhoto = () => {
     if (currentPhotoIndex < photos.length - 1) {
       setCurrentPhotoIndex(prevIndex => prevIndex + 1);
@@ -61,8 +83,36 @@ function UserPhotos({ userId, advancedFeaturesEnabled}) {
     }
   };
 
+  const handleDeletePhoto = (photoId) => {
+    axios.delete(`/photos/${photoId}`)
+      .then(() => {
+        setPhotos(prevPhotos => prevPhotos.filter(photo => photo._id !== photoId));
+      })
+      .catch(error => {
+        console.error("Error deleting photo:", error);
+      });
+  };
+
+  const handleDeleteComment = (photoId, commentId) => {
+    axios.delete(`/comments/${commentId}`)
+      .then(() => {
+        setPhotos(prevPhotos => prevPhotos.map(photo => {
+          if (photo._id === photoId) {
+            return {
+              ...photo,
+              comments: photo.comments.filter(comment => comment._id !== commentId)
+            };
+          }
+          return photo;
+        }));
+      })
+      .catch(error => {
+        console.error("Error deleting comment:", error);
+      });
+  };
+
   if (photos.length === 0) {
-    return <Typography variant="body1">Loading...</Typography>;
+    return <Typography variant="body1">No photos available.</Typography>;
   }
 
   return (
@@ -111,23 +161,37 @@ function UserPhotos({ userId, advancedFeaturesEnabled}) {
                           </>
                         )}
                       />
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => handleDeleteComment(photos[currentPhotoIndex]._id, comment._id)}
+                      >
+                        Delete Comment
+                      </Button>
                     </ListItem>
                   ))}
                 </List>
               )}
               <TextField
                 fullWidth
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                value={comments[photos[currentPhotoIndex]._id] || ""}
+                onChange={(e) => handleCommentChange(photos[currentPhotoIndex]._id, e.target.value)}
                 placeholder="Add a comment..."
                 margin="normal"
               />
               <Button
                 variant="contained"
                 onClick={() => handleAddComment(photos[currentPhotoIndex]._id)}
-                disabled={!newComment.trim()}
+                disabled={!comments[photos[currentPhotoIndex]._id]?.trim()}
               >
                 Add Comment
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => handleDeletePhoto(photos[currentPhotoIndex]._id)}
+              >
+                Delete Photo
               </Button>
             </CardContent>
           </Card>
@@ -153,7 +217,7 @@ function UserPhotos({ userId, advancedFeaturesEnabled}) {
               component="img"
               height="500"
               image={`/images/${photo.file_name}`}
-              alt={photo.date_time} // Alt text for accessibility
+              alt={photo.date_time}
               style={{ objectFit: "contain" }}
             />
             <CardContent>
@@ -190,28 +254,47 @@ function UserPhotos({ userId, advancedFeaturesEnabled}) {
                           </>
                         )}
                       />
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => handleDeleteComment(photo._id, comment._id)}
+                      >
+                        Delete Comment
+                      </Button>
                     </ListItem>
                   ))}
                 </List>
               )}
               <TextField
                 fullWidth
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                value={comments[photo._id] || ""}
+                onChange={(e) => handleCommentChange(photo._id, e.target.value)}
                 placeholder="Add a comment..."
                 margin="normal"
               />
               <Button
                 variant="contained"
                 onClick={() => handleAddComment(photo._id)}
-                disabled={!newComment.trim()}
+                disabled={!comments[photo._id]?.trim()}
               >
                 Add Comment
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => handleDeletePhoto(photo._id)}
+              >
+                Delete Photo
               </Button>
             </CardContent>
           </Card>
         ))
       )}
+      <PhotoUpload 
+        open={uploadDialogOpen} 
+        onClose={() => setUploadDialogOpen(false)} 
+        onUploadSuccess={refreshPhotos} // Pass the refresh function
+      />
     </div>
   );
 }

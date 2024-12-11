@@ -1,41 +1,56 @@
 /* UserDetail.css */
 
 .user-detail {
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 500px;
-    background-color: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    text-align: center;
-  }
-  
-  .user-detail h4 {
-    margin-bottom: 10px;
-    color: #333;
-    font-weight: 600;
-  }
-  
-  .user-detail .MuiTypography-body1 {
-    color: #555;
-    margin: 8px 0;
-    line-height: 1.6;
-  }
-  
-  .user-detail .MuiButton-root {
-    margin-top: 20px;
-    font-weight: bold;
-    color: #fff;
-    background-color: #007bff;
-    transition: background-color 0.3s;
-  }
-  
-  .user-detail .MuiButton-root:hover {
-    background-color: #0056b3;
-  }
-  
-  .user-detail .MuiButton-root:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
-  }
-  
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 500px;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.user-detail h4 {
+  margin-bottom: 10px;
+  color: #333;
+  font-weight: 600;
+}
+
+.user-detail .MuiTypography-body1 {
+  color: #555;
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.user-detail .MuiButton-root {
+  margin-top: 20px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #007bff;
+  transition: background-color 0.3s;
+}
+
+.user-detail .MuiButton-root:hover {
+  background-color: #0056b3;
+}
+
+.user-detail .MuiButton-root:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+}
+
+.photo-container {
+  margin: 20px 0;
+}
+
+.photo-card {
+  max-width: 100%; /* Allow the card to take full width */
+  margin: auto;
+}
+
+.photo-image {
+  object-fit: contain; /* Ensure the entire image is visible */
+  height: auto; /* Allow height to adjust based on width */
+  max-height: 300px; /* Set a maximum height for the image */
+  border-radius: 8px;
+}

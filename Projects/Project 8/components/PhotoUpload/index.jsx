@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
-function PhotoUpload({ open, onClose, onUploadSuccess }) {
+function PhotoUpload({ open, onClose, onUploadSuccess, onRefresh }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -43,6 +43,9 @@ function PhotoUpload({ open, onClose, onUploadSuccess }) {
       setShowSuccess(true);
       if (onUploadSuccess) {
         onUploadSuccess(response.data);
+      }
+      if (onRefresh) {
+        onRefresh();
       }
       onClose();
     } catch (err) {

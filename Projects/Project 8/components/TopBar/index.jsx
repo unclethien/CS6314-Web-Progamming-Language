@@ -26,6 +26,24 @@ function TopBar({toggleAdvancedFeatures, user, onLogout}) {
     setUploadDialogOpen(false);
   };
 
+  const handleDeleteAccount = () => {
+    // eslint-disable-next-line no-alert
+    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+      axios.delete("/user")
+        .then(() => {
+          // eslint-disable-next-line no-alert
+          alert("Your account has been deleted successfully.");
+          onLogout(); // Log the user out after deletion
+          setTimeout(() => {
+            window.location.reload(); // Refresh the page after a short delay
+          }, 100); // Delay of 100 milliseconds
+        })
+        .catch(error => {
+          console.error("Error deleting user account:", error);
+        });
+    }
+  };
+
   useEffect(() => {
     axios.get("/test/info")
       .then(response => setVersion(response.data.__v))
@@ -72,6 +90,13 @@ function TopBar({toggleAdvancedFeatures, user, onLogout}) {
                 onClick={() => setUploadDialogOpen(true)}
               >
                 Add Photo
+              </Button>
+              <Button 
+                color="inherit" 
+                onClick={handleDeleteAccount}
+                style={{ marginLeft: '10px' }}
+              >
+                Delete Account
               </Button>
               <Button 
                 color="inherit" 

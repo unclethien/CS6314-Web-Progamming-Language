@@ -17,7 +17,7 @@ process.env.LOADING_DATABASE = 'true';
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
 mongoose.set("strictQuery", false);
-mongoose.connect("mongodb://127.0.0.1/project7", {
+mongoose.connect("mongodb://127.0.0.1/project8", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -137,7 +137,7 @@ Promise.all(removePromises)
               schemaInfo.version
             );
           })
-          .catch(function (err) {
+          .catch(function (err) { 
             console.error("Error create schemaInfo", err);
           });
       });

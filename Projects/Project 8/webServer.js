@@ -51,7 +51,7 @@ const SchemaInfo = require("./schema/schemaInfo.js");
 // this line for tests and before submission!
 //const models = require("./modelData/photoApp.js").models;
 mongoose.set("strictQuery", false);
-mongoose.connect("mongodb://127.0.0.1/project7", {
+mongoose.connect("mongodb://127.0.0.1/project8", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -495,6 +495,85 @@ app.get('/api/session/check', async (req, res) => {
     }
   }
   res.status(401).json({ error: 'No active session' });
+});
+
+app.delete("/photos/:photoId", requireLogin, async (request, response) => {
+  const photoId = request.params.photoId;
+  const userId = request.session.user._id;
+
+  try {
+    const photo = await Photo.findById(photoId);
+    if (!photo) {
+      return response.status(404).send("Photo not found");
+    }
+
+    if (photo.user_id.toString() !== userId.toString()) {
+      return response.status(403).send("You do not have permission to delete this photo");
+    }
+
+    await Photo.findByIdAndDelete(photoId);
+    return response.status(200).send("Photo deleted successfully");
+  } catch (err) {
+    console.error("Error deleting photo:", err);
+    return response.status(400).send("Error deleting photo");
+  }
+});
+
+app.delete("/comments/:commentId", requireLogin, async (request, response) => {
+  const commentId = request.params.commentId;
+  const userId = request.session.user._id;
+
+  try {
+    // Find the photo that contains the comment
+    const photo = await Photo.findOne({ "comments._id": commentId });
+    if (!photo) {
+      return response.status(404).send("Comment not found");
+    }
+
+    // Find the comment in the photo's comments array
+    const comment = photo.comments.id(commentId);
+    if (!comment) {
+      return response.status(404).send("Comment not found");
+    }
+
+    // Check if the user is the owner of the comment
+    if (comment.user_id.toString() !== userId.toString()) {
+      return response.status(403).send("You do not have permission to delete this comment");
+    }
+
+    // Remove the comment from the photo's comments array
+    photo.comments = photo.comments.filter(c => c._id.toString() !== commentId); // Filter out the comment
+
+    // Save the updated photo
+    await photo.save();
+    return response.status(200).send("Comment deleted successfully");
+  } catch (err) {
+    console.error("Error deleting comment:", err);
+    return response.status(400).send("Error deleting comment");
+  }
+});
+
+app.delete("/user", requireLogin, async (request, response) => {
+  const userId = request.session.user._id;
+
+  // Confirmation step (you can implement this in the frontend)
+  // For example, you can send a confirmation message to the user before proceeding.
+
+  try {
+    // Delete all photos associated with the user
+    await Photo.deleteMany({ user_id: userId });
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    // Log the user out
+    request.session.destroy();
+
+    return response.status(200).send("User account deleted successfully");
+  } catch (err) {
+    console.error("Error deleting user account:", err);
+    return response.status(400).send("Error deleting user account");
+  }
 });
 
 const server = app.listen(3000, function () {

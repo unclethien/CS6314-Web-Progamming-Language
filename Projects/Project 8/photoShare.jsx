@@ -11,12 +11,16 @@ import UserList from "./components/UserList";
 import UserPhotos from "./components/UserPhotos";
 import LoginRegister from "./components/LoginRegister";
 
+const handleUserDeleted = () => {
+  console.log("User account has been deleted.");
+};
+
 function UserDetailRoute({user}) {
   const {userId} = useParams();
   if (!user) {
     return <Navigate to="/" />;
   }
-  return <UserDetail userId={userId} />;
+  return <UserDetail userId={userId} onUserDeleted={handleUserDeleted} />;
 }
 
 function UserPhotosRoute({user, advancedFeaturesEnabled}) {
@@ -44,6 +48,8 @@ function PhotoShare() {
   const handleToggleAdvancedFeatures = () => {
     setAdvancedFeaturesEnabled(!advancedFeaturesEnabled);
   };
+
+
 
   useEffect(() => {
     // Check for existing session when app loads
