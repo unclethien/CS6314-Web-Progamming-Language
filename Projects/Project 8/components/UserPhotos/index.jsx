@@ -8,7 +8,6 @@ import {
   ListItem,
   ListItemText,
   Button,
-<<<<<<< HEAD
   IconButton,
 } from "@mui/material";
 import axios from "axios";
@@ -16,11 +15,6 @@ import { MentionsInput, Mention } from 'react-mentions';
 import { Link } from 'react-router-dom';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-=======
-  TextField
-} from "@mui/material";
-import axios from "axios";
->>>>>>> parent of 02367dc4 (update)
 import PhotoUpload from '../PhotoUpload';
 
 function UserPhotos({ userId, advancedFeaturesEnabled }) {
@@ -28,11 +22,6 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [comments, setComments] = useState({});
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-<<<<<<< HEAD
-  const [users, setUsers] = useState([]);
-  const [likes, setLikes] = useState({});
-=======
->>>>>>> parent of 02367dc4 (update)
 
   const refreshPhotos = () => {
     axios.get(`/photosOfUser/${userId}`)
@@ -130,29 +119,6 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
       });
   };
 
-<<<<<<< HEAD
-  const handleLike = (photoId) => {
-    axios.post(`/photos/${photoId}/like`)
-      .then(() => {
-        setLikes(prev => ({ ...prev, [photoId]: [...prev[photoId], userId] }));
-      })
-      .catch(error => {
-        console.error("Error liking photo:", error);
-      });
-  };
-
-  const handleUnlike = (photoId) => {
-    axios.post(`/photos/${photoId}/unlike`)
-      .then(() => {
-        setLikes(prev => ({ ...prev, [photoId]: prev[photoId].filter(id => id !== userId) }));
-      })
-      .catch(error => {
-        console.error("Error unliking photo:", error);
-      });
-  };
-
-=======
->>>>>>> parent of 02367dc4 (update)
   if (photos.length === 0) {
     return <Typography variant="body1">No photos available.</Typography>;
   }
