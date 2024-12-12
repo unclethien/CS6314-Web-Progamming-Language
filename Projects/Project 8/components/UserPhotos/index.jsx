@@ -8,9 +8,6 @@ import {
   ListItem,
   ListItemText,
   Button,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   IconButton,
 } from "@mui/material";
 import axios from "axios";
@@ -18,21 +15,6 @@ import { MentionsInput, Mention } from 'react-mentions';
 import { Link } from 'react-router-dom';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-=======
-  TextField
-} from "@mui/material";
-import axios from "axios";
->>>>>>> parent of 02367dc4 (update)
-=======
-  TextField
-} from "@mui/material";
-import axios from "axios";
->>>>>>> parent of 02367dc4 (update)
-=======
-  TextField
-} from "@mui/material";
-import axios from "axios";
->>>>>>> parent of 02367dc4 (update)
 import PhotoUpload from '../PhotoUpload';
 
 function UserPhotos({ userId, advancedFeaturesEnabled }) {
@@ -40,6 +22,8 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [comments, setComments] = useState({});
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [likes, setLikes] = useState({});
 
   const refreshPhotos = () => {
     axios.get(`/photosOfUser/${userId}`)
@@ -75,6 +59,15 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
     setComments({}); // Reset comments
     setLikes({}); // Reset likes
     refreshPhotos(); // Fetch new photos
+
+    // Fetch all users for mentions
+    axios.get('/user/list')
+      .then(response => {
+        setUsers(response.data.map(user => ({ id: user._id, display: `${user.first_name} ${user.last_name}` })));
+      })
+      .catch(error => {
+        console.error("Error fetching users for mentions:", error);
+      });
   }, [userId]);
 
   const handleAddComment = (photoId) => {
@@ -137,6 +130,26 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
       });
   };
 
+  const handleLike = (photoId) => {
+    axios.post(`/photos/${photoId}/like`)
+      .then(() => {
+        setLikes(prev => ({ ...prev, [photoId]: [...prev[photoId], userId] }));
+      })
+      .catch(error => {
+        console.error("Error liking photo:", error);
+      });
+  };
+
+  const handleUnlike = (photoId) => {
+    axios.post(`/photos/${photoId}/unlike`)
+      .then(() => {
+        setLikes(prev => ({ ...prev, [photoId]: prev[photoId].filter(id => id !== userId) }));
+      })
+      .catch(error => {
+        console.error("Error unliking photo:", error);
+      });
+  };
+
   if (photos.length === 0) {
     return <Typography variant="body1">No photos available.</Typography>;
   }
@@ -166,24 +179,9 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
                         secondary={(
                           <>
                             {new Date(comment.date_time).toLocaleString()} by{" "}
-                            <button
-                              style={{
-                                background: "none",
-                                border: "none",
-                                color: "blue",
-                                textDecoration: "underline",
-                                cursor: "pointer",
-                                padding: 0,
-                                font: "inherit",
-                              }}
-                              onClick={() => {
-                                const commenter = comment.user;
-                                // eslint-disable-next-line no-alert
-                                alert(`User: ${commenter.first_name} ${commenter.last_name}\nLocation: ${commenter.location}\nDescription: ${commenter.description}\nOccupation: ${commenter.occupation}`);
-                              }}
-                            >
+                            <Link to={`/user/${comment.user_id}`}>
                               {comment.user.first_name} {comment.user.last_name}
-                            </button>
+                            </Link>
                           </>
                         )}
                       />
@@ -198,13 +196,19 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
                   ))}
                 </List>
               )}
-              <TextField
-                fullWidth
+              <MentionsInput
                 value={comments[photos[currentPhotoIndex]._id] || ""}
-                onChange={(e) => handleCommentChange(photos[currentPhotoIndex]._id, e.target.value)}
+                onChange={(e, newValue) => handleCommentChange(photos[currentPhotoIndex]._id, newValue)}
                 placeholder="Add a comment..."
-                margin="normal"
-              />
+                style={{ width: '100%', marginTop: '10px' }}
+              >
+                <Mention
+                  trigger="@"
+                  data={users}
+                  markup="@[__display__](__id__)"
+                  style={{ backgroundColor: '#d1e7dd' }}
+                />
+              </MentionsInput>
               <Button
                 variant="contained"
                 onClick={() => handleAddComment(photos[currentPhotoIndex]._id)}
@@ -273,24 +277,9 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
                         secondary={(
                           <>
                             {new Date(comment.date_time).toLocaleString()} by{" "}
-                            <button
-                              style={{
-                                background: "none",
-                                border: "none",
-                                color: "blue",
-                                textDecoration: "underline",
-                                cursor: "pointer",
-                                padding: 0,
-                                font: "inherit",
-                              }}
-                              onClick={() => {
-                                const commenter = comment.user;
-                                // eslint-disable-next-line no-alert
-                                alert(`User: ${commenter.first_name} ${commenter.last_name}\nLocation: ${commenter.location}\nDescription: ${commenter.description}\nOccupation: ${commenter.occupation}`);
-                              }}
-                            >
+                            <Link to={`/user/${comment.user_id}`}>
                               {comment.user.first_name} {comment.user.last_name}
-                            </button>
+                            </Link>
                           </>
                         )}
                       />
@@ -305,13 +294,19 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
                   ))}
                 </List>
               )}
-              <TextField
-                fullWidth
+              <MentionsInput
                 value={comments[photo._id] || ""}
-                onChange={(e) => handleCommentChange(photo._id, e.target.value)}
+                onChange={(e, newValue) => handleCommentChange(photo._id, newValue)}
                 placeholder="Add a comment..."
-                margin="normal"
-              />
+                style={{ width: '100%', marginTop: '10px' }}
+              >
+                <Mention
+                  trigger="@"
+                  data={users}
+                  markup="@[__display__](__id__)"
+                  style={{ backgroundColor: '#d1e7dd' }}
+                />
+              </MentionsInput>
               <Button
                 variant="contained"
                 onClick={() => handleAddComment(photo._id)}

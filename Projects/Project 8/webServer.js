@@ -353,17 +353,71 @@ app.post("/commentsOfPhoto/:photo_id", async (request, response) => {
       return response.status(404).send("Photo not found");
     }
 
+    // Extract mentions from the comment
+    const mentionRegex = /@\[(.*?)\]\((\w+)\)/g;
+    const mentions = [];
+    let match;
+    match = mentionRegex.exec(comment);
+    while (match !== null) {
+      mentions.push(match[2]); // Extract the user ID from the mention
+      match = mentionRegex.exec(comment);
+    }
     photo.comments.push({
       comment: comment,
       user_id: request.session.user._id,
       date_time: new Date()
     });
 
+    // Add mentions to the photo
+    photo.mentions = [...new Set([...photo.mentions, ...mentions])];
+
     await photo.save();
     return response.status(200).send("Comment added successfully");
   } catch (err) {
     console.error("Error adding comment:", err);
     return response.status(400).send(JSON.stringify(err));
+  }
+});
+
+// Endpoint to get all photos that mention a specific user
+app.get("/photosWithMentions/:userId", async (request, response) => {
+  const userId = request.params.userId;
+
+  try {
+    const photos = await Photo.find({ mentions: userId })
+      .populate({
+        path: 'comments.user_id',
+        select: '_id first_name last_name location description occupation',
+        model: 'User'
+      })
+      .sort({ date_time: 1 })
+      .lean();
+
+    if (!photos || photos.length === 0) {
+      return response.status(400).json({ error: "No photos found with mentions for this user" });
+    }
+
+    const transformedPhotos = photos.map(photo => ({
+      _id: photo._id,
+      file_name: photo.file_name,
+      date_time: photo.date_time,
+      user_id: photo.user_id,
+      comments: photo.comments.map(comment => ({
+        comment: comment.comment,
+        date_time: comment.date_time,
+        _id: comment._id,
+        user: comment.user_id ? {
+          _id: comment.user_id._id,
+          first_name: comment.user_id.first_name,
+          last_name: comment.user_id.last_name
+        } : null
+      }))
+    }));
+
+    return response.status(200).json(transformedPhotos);
+  } catch (err) {
+    console.error("Error fetching photos with mentions for user:", err);
+    return response.status(400).json({ error: err.message });
   }
 });
 
