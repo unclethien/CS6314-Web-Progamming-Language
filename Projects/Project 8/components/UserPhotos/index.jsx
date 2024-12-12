@@ -8,13 +8,10 @@ import {
   ListItem,
   ListItemText,
   Button,
-  IconButton,
 } from "@mui/material";
 import axios from "axios";
 import { MentionsInput, Mention } from 'react-mentions';
 import { Link } from 'react-router-dom';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import PhotoUpload from '../PhotoUpload';
 
 function UserPhotos({ userId, advancedFeaturesEnabled }) {
@@ -23,7 +20,6 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
   const [comments, setComments] = useState({});
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [users, setUsers] = useState([]);
-  const [likes, setLikes] = useState({});
 
   const refreshPhotos = () => {
     axios.get(`/photosOfUser/${userId}`)
@@ -31,13 +27,10 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
         if (response.data && Array.isArray(response.data)) {
           setPhotos(response.data);
           const initialComments = {};
-          const initialLikes = {};
           response.data.forEach(photo => {
             initialComments[photo._id] = ""; // Set initial comment to empty
-            initialLikes[photo._id] = photo.likes; // Set initial likes
           });
           setComments(initialComments);
-          setLikes(initialLikes);
         } else {
           setPhotos([]); // Set to empty array if response is not an array
         }
@@ -57,7 +50,6 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
     setPhotos([]); // Clear photos when userId changes
     setCurrentPhotoIndex(0); // Reset photo index
     setComments({}); // Reset comments
-    setLikes({}); // Reset likes
     refreshPhotos(); // Fetch new photos
 
     // Fetch all users for mentions
@@ -130,24 +122,11 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
       });
   };
 
-  const handleLike = (photoId) => {
-    axios.post(`/photos/${photoId}/like`)
-      .then(() => {
-        setLikes(prev => ({ ...prev, [photoId]: [...prev[photoId], userId] }));
-      })
-      .catch(error => {
-        console.error("Error liking photo:", error);
-      });
-  };
-
-  const handleUnlike = (photoId) => {
-    axios.post(`/photos/${photoId}/unlike`)
-      .then(() => {
-        setLikes(prev => ({ ...prev, [photoId]: prev[photoId].filter(id => id !== userId) }));
-      })
-      .catch(error => {
-        console.error("Error unliking photo:", error);
-      });
+  const renderCommentWithMentions = (comment) => {
+    const mentionRegex = /@\[(.*?)\]\((\w+)\)/g;
+    return comment.replace(mentionRegex, (match, p1, p2) => {
+      return `<a href='#/users/${p2}'>@${p1}</a>`;
+    });
   };
 
   if (photos.length === 0) {
@@ -175,7 +154,9 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
                   {photos[currentPhotoIndex].comments.map((comment) => (
                     <ListItem key={comment._id}>
                       <ListItemText
-                        primary={comment.comment}
+                        primary={
+                          <span dangerouslySetInnerHTML={{ __html: renderCommentWithMentions(comment.comment) }} />
+                        }
                         secondary={(
                           <>
                             {new Date(comment.date_time).toLocaleString()} by{" "}
@@ -223,20 +204,6 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
               >
                 Delete Photo
               </Button>
-              <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
-                {likes[photos[currentPhotoIndex]._id]?.includes(userId) ? (
-                  <IconButton color="primary" onClick={() => handleUnlike(photos[currentPhotoIndex]._id)}>
-                    <FavoriteIcon />
-                  </IconButton>
-                ) : (
-                  <IconButton color="primary" onClick={() => handleLike(photos[currentPhotoIndex]._id)}>
-                    <FavoriteBorderIcon />
-                  </IconButton>
-                )}
-                <Typography variant="body2" style={{ marginLeft: '5px' }}>
-                  {likes[photos[currentPhotoIndex]._id]?.length || 0} likes
-                </Typography>
-              </div>
             </CardContent>
           </Card>
           <div>
@@ -273,7 +240,9 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
                   {photo.comments.map((comment) => (
                     <ListItem key={comment._id}>
                       <ListItemText
-                        primary={comment.comment}
+                        primary={
+                          <span dangerouslySetInnerHTML={{ __html: renderCommentWithMentions(comment.comment) }} />
+                        }
                         secondary={(
                           <>
                             {new Date(comment.date_time).toLocaleString()} by{" "}
@@ -321,20 +290,6 @@ function UserPhotos({ userId, advancedFeaturesEnabled }) {
               >
                 Delete Photo
               </Button>
-              <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
-                {likes[photo._id]?.includes(userId) ? (
-                  <IconButton color="primary" onClick={() => handleUnlike(photo._id)}>
-                    <FavoriteIcon />
-                  </IconButton>
-                ) : (
-                  <IconButton color="primary" onClick={() => handleLike(photo._id)}>
-                    <FavoriteBorderIcon />
-                  </IconButton>
-                )}
-                <Typography variant="body2" style={{ marginLeft: '5px' }}>
-                  {likes[photo._id]?.length || 0} likes
-                </Typography>
-              </div>
             </CardContent>
           </Card>
         ))

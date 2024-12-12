@@ -184,61 +184,7 @@ app.get("/user/:id", requireLogin, async function (request, response) {
  * URL /photosOfUser/:id - Returns the Photos for User (id).
  */
 // eslint-disable-next-line consistent-return
-// Endpoint to like a photo
-// Endpoint to like a photo
-// Endpoint to like a photo
-app.post("/photos/:photoId/like", requireLogin, async (request, response) => {
-  const photoId = request.params.photoId;
-  const userId = request.session.user._id;
-
-  try {
-    const photo = await Photo.findById(photoId);
-    if (!photo) {
-      return response.status(404).send("Photo not found");
-    }
-
-    // Check if the user has already liked the photo
-    if (photo.likes.includes(userId)) {
-      return response.status(400).send("You have already liked this photo");
-    }
-    // Add the user ID to the likes array
-    photo.likes.push(userId);
-    await photo.save();
-
-    return response.status(200).send("Photo liked successfully");
-  } catch (err) {
-    console.error("Error liking photo:", err);
-    return response.status(400).send("Error liking photo");
-  }
-});
-// Endpoint to unlike a photo
-app.post("/photos/:photoId/unlike", requireLogin, async (request, response) => {
-  const photoId = request.params.photoId;
-  const userId = request.session.user._id;
-
-  try {
-    const photo = await Photo.findById(photoId);
-    if (!photo) {
-      return response.status(404).send("Photo not found");
-    }
-
-    // Check if the user has liked the photo
-    if (!photo.likes.includes(userId)) {
-      return response.status(400).send("You have not liked this photo");
-    }
-
-    // Remove the user ID from the likes array
-    photo.likes = photo.likes.filter(id => id.toString() !== userId.toString());
-    await photo.save();
-
-    return response.status(200).send("Photo unliked successfully");
-  } catch (err) {
-    console.error("Error unliking photo:", err);
-    return response.status(400).send("Error unliking photo");
-  }
-});
-
-// Update the /photosOfUser/:id endpoint to return the number of likes
+// eslint-disable-next-line consistent-return
 app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
   const userId = request.params.id;
   
@@ -254,10 +200,12 @@ app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
         select: '_id first_name last_name location description occupation',
         model: 'User'  
       })
-      .sort({ likes: -1, date_time: -1 }) // Sort by likes descending, then by date descending
+      .sort({ date_time: 1 })
       .lean();
 
+    // Note: Changed from checking !photos to checking photos.length
     if (!photos || photos.length === 0) {
+      console.log("Photos for user with _id:" + userId + " not found.");
       return response.status(400).json({error: "No photos found for user"});
     }
 
@@ -275,8 +223,7 @@ app.get("/photosOfUser/:id", requireLogin, async function (request, response) {
           first_name: comment.user_id.first_name,
           last_name: comment.user_id.last_name
         } : null
-      })),
-      likes: photo.likes.length, // Include the number of likes
+      }))
     }));
 
     return response.status(200).json(transformedPhotos);
